@@ -70,6 +70,11 @@ let toastTimer: ReturnType<typeof setTimeout> | null = null
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
 let saving = false
 let closeBound = false
+let beforeCloseHook: (() => void) | null = null
+
+export function setBeforeCloseHook(hook: (() => void) | null): void {
+  beforeCloseHook = hook
+}
 
 export function showToast(text: string, kind: 'info' | 'error' = 'info'): void {
   appState.toast = { text, kind }
@@ -161,6 +166,7 @@ export async function saveDocumentAs(options: { silent?: boolean } = {}): Promis
 }
 
 export async function newDocument(): Promise<boolean> {
+  beforeCloseHook?.()
   if (!(await ensureSaved())) return false
   cancelAutoSave()
   docState.path = ''
@@ -174,6 +180,7 @@ export async function newDocument(): Promise<boolean> {
 }
 
 export async function openDocument(targetPath?: string): Promise<boolean> {
+  beforeCloseHook?.()
   if (!(await ensureSaved())) return false
   let target: string | null | undefined = targetPath
   if (!target) {
@@ -231,6 +238,7 @@ export async function bindCloseHandler(): Promise<void> {
   try {
     const windowHandle = getCurrentWindow()
     await windowHandle.onCloseRequested(async (event) => {
+      beforeCloseHook?.()
       if (!dirty.value) return
       event.preventDefault()
       const canClose = await ensureSaved()
