@@ -38,10 +38,11 @@ textarea {
 
 .toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
-  height: 52px;
-  padding: 0 18px;
+  gap: 8px 16px;
+  min-height: 52px;
+  padding: 8px 18px;
   background: #ffffff;
   border-bottom: 1px solid #e2e8f0;
   flex: none;
@@ -68,6 +69,7 @@ textarea {
 .actions {
   margin-left: auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -289,15 +291,30 @@ textarea {
 
 .statusbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  height: 30px;
-  padding: 0 14px;
+  gap: 4px 6px;
+  min-height: 30px;
+  padding: 4px 14px;
   border-top: 1px solid #e2e8f0;
   background: #ffffff;
   color: #64748b;
   font-size: 11px;
   flex: none;
+}
+
+.status-path {
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
 }
 
 .dot {

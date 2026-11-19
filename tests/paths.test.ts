@@ -6,6 +6,7 @@ import {
   parentDir,
   resolveRelative,
   safeDecode,
+  sanitizeFileName,
 } from '../src/core/paths'
 
 describe('paths', () => {
@@ -58,5 +59,11 @@ describe('paths', () => {
   it('safeDecode 遇到非法编码时回退原字符串', () => {
     expect(safeDecode('%E0%A4%A')).toBe('%E0%A4%A')
     expect(safeDecode('%E5%A4%B4%E5%83%8F')).toBe('头像')
+  })
+
+  it('sanitizeFileName 清理 Windows 非法字符', () => {
+    expect(sanitizeFileName('张三的简历')).toBe('张三的简历')
+    expect(sanitizeFileName('a/b\\c:d*e?f"g<h>i|j')).toBe('a b c d e f g h i j')
+    expect(sanitizeFileName('   ')).toBe('未命名简历')
   })
 })

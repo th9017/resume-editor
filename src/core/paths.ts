@@ -42,3 +42,11 @@ export function resolveRelative(baseDir: string, ref: string): string {
   decoded = sep === '\\' ? decoded.replace(/\//g, '\\') : decoded.replace(/\\/g, '/')
   return joinPath(baseDir, decoded)
 }
+
+export function sanitizeFileName(name: string): string {
+  const cleaned = name
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return cleaned || '未命名简历'
+}
