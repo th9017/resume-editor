@@ -4,14 +4,16 @@ import { collectImageRefs, resolveImagePath } from '../core/images'
 import { baseName, isAbsolutePath, parentDir, sanitizeFileName } from '../core/paths'
 import { parseResume } from '../core/parser'
 import {
-  loadRecent,
   pushRecent,
   removeRecent,
-  saveRecent,
   updateRecentName,
   type RecentFile,
-  type StorageLike,
 } from '../core/recent'
+import {
+  loadAppSettings,
+  saveAppSettings,
+  type AppSettings,
+} from '../core/settings'
 import { STARTER_MARKDOWN } from '../samples/starter'
 import {
   ensureDir,
@@ -31,10 +33,6 @@ export interface ToastMessage {
   kind: 'info' | 'error'
 }
 
-const storage: StorageLike | null =
-  typeof localStorage !== 'undefined' ? localStorage : null
-const AUTO_SAVE_KEY = 'resume.autoSave.v1'
-
 export const docState = reactive({
   path: '',
   content: STARTER_MARKDOWN,
@@ -44,8 +42,9 @@ export const docState = reactive({
 })
 
 export const appState = reactive({
-  recent: loadRecent(storage) as RecentFile[],
-  autoSave: loadAutoSave(),
+  recent: [] as RecentFile[],
+  autoSave: true,
+  printTipsDismissed: false,
   toast: null as ToastMessage | null,
 })
 
@@ -68,12 +67,46 @@ export const confirmState = reactive({
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
+let settingsTimer: ReturnType<typeof setTimeout> | null = null
 let saving = false
 let closeBound = false
 let beforeCloseHook: (() => void) | null = null
 
 export function setBeforeCloseHook(hook: (() => void) | null): void {
   beforeCloseHook = hook
+}
+
+function settingsSnapshot(): AppSettings {
+  return {
+    version: 1,
+    recent: appState.recent,
+    autoSave: appState.autoSave,
+    printTipsDismissed: appState.printTipsDismissed,
+  }
+}
+
+function persistSettings(): void {
+  if (settingsTimer) clearTimeout(settingsTimer)
+  settingsTimer = setTimeout(() => {
+    settingsTimer = null
+    void saveAppSettings(settingsSnapshot())
+  }, 200)
+}
+
+export async function initSettings(): Promise<void> {
+  try {
+    const settings = await loadAppSettings()
+    appState.recent = settings.recent
+    appState.autoSave = settings.autoSave
+    appState.printTipsDismissed = settings.printTipsDismissed
+  } catch {
+    /* 设置读取失败时保持默认值 */
+  }
+}
+
+export function setPrintTipsDismissed(): void {
+  appState.printTipsDismissed = true
+  persistSettings()
 }
 
 export function showToast(text: string, kind: 'info' | 'error' = 'info'): void {
@@ -274,20 +307,11 @@ function addRecent(path: string, content: string): void {
 function updateRecentForPath(path: string, content: string): void {
   const name = parseResume(content).identity.name || baseName(path)
   appState.recent = updateRecentName(appState.recent, path, name)
-  persistRecent()
+  persistSettings()
 }
 
 function persistRecent(): void {
-  saveRecent(storage, appState.recent)
-}
-
-function loadAutoSave(): boolean {
-  try {
-    const value = storage?.getItem(AUTO_SAVE_KEY)
-    return value == null ? true : value === '1'
-  } catch {
-    return true
-  }
+  persistSettings()
 }
 
 interface CopyAssetsResult {
@@ -351,11 +375,10 @@ watch(
 
 watch(
   () => appState.autoSave,
-  (value) => {
-    try {
-      storage?.setItem(AUTO_SAVE_KEY, value ? '1' : '0')
-    } catch {
-      /* 偏好保存失败时忽略 */
-    }
-  },
+  () => persistSettings(),
+)
+
+watch(
+  () => appState.printTipsDismissed,
+  () => persistSettings(),
 )

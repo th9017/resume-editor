@@ -17,12 +17,14 @@ import {
   bindCloseHandler,
   dirty,
   docState,
+  initSettings,
   newDocument,
   openDocument,
   refreshWindowTitle,
   saveDocument,
   saveDocumentAs,
   setBeforeCloseHook,
+  setPrintTipsDismissed,
   showToast,
 } from './stores/document'
 import {
@@ -50,7 +52,6 @@ import Toast from './components/Toast.vue'
 const printing = ref(false)
 const printTipsOpen = ref(false)
 const drawerOpen = ref(false)
-const PRINT_TIPS_KEY = 'resume.printTipsDismissed.v1'
 const layout = ref<LayoutPlan>({ fit: 1, stacked: false, pageCount: 1 })
 const imageVersion = ref(0)
 let layoutJob = 0
@@ -231,24 +232,8 @@ function onKeydown(event: KeyboardEvent): void {
   }
 }
 
-function printTipsDismissed(): boolean {
-  try {
-    return localStorage.getItem(PRINT_TIPS_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-function rememberPrintTips(): void {
-  try {
-    localStorage.setItem(PRINT_TIPS_KEY, '1')
-  } catch {
-    /* 偏好保存失败时忽略 */
-  }
-}
-
 function handleExport(): void {
-  if (printTipsDismissed()) {
+  if (appState.printTipsDismissed) {
     void runPrint()
     return
   }
@@ -256,7 +241,7 @@ function handleExport(): void {
 }
 
 function onPrintTipsConfirm(dontShow: boolean): void {
-  if (dontShow) rememberPrintTips()
+  if (dontShow) setPrintTipsDismissed()
   printTipsOpen.value = false
   void runPrint()
 }
@@ -299,6 +284,7 @@ onMounted(() => {
   loadFromContent(docState.content)
   setBeforeCloseHook(() => flushDraft())
   window.addEventListener('keydown', onKeydown)
+  void initSettings()
   void bindCloseHandler()
   void refreshWindowTitle()
 })
