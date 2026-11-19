@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import BasicInfoForm from './BasicInfoForm.vue'
 import LayoutPanel from './LayoutPanel.vue'
 import SectionForm from './SectionForm.vue'
-import { activeSection, draft, editorState } from '../stores/editor'
+import { activeSection, draft, editorState, formDiagnostics } from '../stores/editor'
 import { SECTION_META } from '../core/types'
 
 const title = computed(() => {
@@ -29,6 +29,9 @@ const subtitle = computed(() => {
       </div>
     </header>
     <div class="form-scroll">
+      <div v-if="formDiagnostics.length" class="form-alert">
+        当前文档有 {{ formDiagnostics.length }} 条表单不完全支持的内容；保存时可能被重排或忽略。
+      </div>
       <LayoutPanel v-if="editorState.activeView === 'layout'" />
       <BasicInfoForm v-else-if="editorState.activeView === 'basic' && draft" />
       <SectionForm v-else-if="activeSection" :section="activeSection" />
@@ -73,6 +76,17 @@ const subtitle = computed(() => {
   min-height: 0;
   overflow: auto;
   padding: 6px 22px 28px;
+}
+
+.form-alert {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 .form-placeholder {

@@ -30,14 +30,18 @@ import {
   draft,
   draftRevision,
   editorState,
+  enterSourceMode,
   flushDraft,
   loadFromContent,
+  requestSourceSwitch,
 } from './stores/editor'
 import TopBar from './components/TopBar.vue'
 import SectionRail from './components/SectionRail.vue'
 import FormPanel from './components/FormPanel.vue'
 import TemplateDrawer from './components/TemplateDrawer.vue'
 import AddSectionMenu from './components/AddSectionMenu.vue'
+import SourcePanel from './components/SourcePanel.vue'
+import SourceWarningDialog from './components/SourceWarningDialog.vue'
 import PreviewPane from './components/PreviewPane.vue'
 import ConfirmDialog from './components/ConfirmDialog.vue'
 import PrintTipsDialog from './components/PrintTipsDialog.vue'
@@ -190,7 +194,16 @@ function handleSaveAs(): void {
 }
 
 function handleSourcePlaceholder(): void {
-  showToast('源码模式将在下一步接入')
+  if (editorState.mode === 'form') enterSourceMode()
+  else requestSourceSwitch()
+}
+
+function openTemplate(): void {
+  if (editorState.mode === 'source') {
+    showToast('请先返回表单，再调整模板与主题')
+    return
+  }
+  drawerOpen.value = true
 }
 
 function handleAddSectionPlaceholder(): void {
@@ -317,7 +330,7 @@ onBeforeUnmount(() => {
       @save="handleSave"
       @save-as="handleSaveAs"
       @export="handleExport"
-      @template="drawerOpen = true"
+      @template="openTemplate"
       @recent="handleOpen"
       @source="handleSourcePlaceholder"
       @toggle-auto-save="toggleAutoSave"
@@ -330,11 +343,11 @@ onBeforeUnmount(() => {
           :active="editorState.activeView"
           @select="selectView"
           @add="handleAddSectionPlaceholder"
-          @template="drawerOpen = true"
+          @template="openTemplate"
         />
         <FormPanel />
       </template>
-      <div v-else class="source-placeholder">源码模式将在下一步接入</div>
+      <SourcePanel v-else />
 
       <section class="preview-pane">
         <header class="preview-head">
@@ -350,6 +363,7 @@ onBeforeUnmount(() => {
 
     <TemplateDrawer :open="drawerOpen" @close="drawerOpen = false" />
     <AddSectionMenu />
+    <SourceWarningDialog />
     <ConfirmDialog />
     <PrintTipsDialog
       :open="printTipsOpen"
