@@ -124,6 +124,11 @@ describe('renderer', () => {
     expect(html).not.toContain('data-type="experience"')
   })
 
+  it('只有空条目的章节不渲染标题', () => {
+    const html = render(':::: experience\n## 工作经历\n::: item\n---\n:::\n::::')
+    expect(html).not.toContain('data-type="experience"')
+  })
+
   it('样式变量写入文章根节点', () => {
     const doc = parseResume(
       '---\nstyle:\n  accent: "#ff0000"\n  font_size: 9\n---\n:::: summary\n## 简介\nHi\n::::',

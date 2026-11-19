@@ -112,3 +112,23 @@ export const CONTACT_LABELS: Record<string, string> = {
 }
 
 export const CONTACT_ORDER = ['phone', 'email', 'location', 'website', 'github', 'linkedin', 'blog', 'wechat']
+
+export const CUSTOM_FIELDS = ['title', 'subtitle', 'period', 'location', 'link'] as const
+
+export const FIELD_LABELS: Record<string, string> = {
+  company: '公司',
+  role: '职位',
+  period: '时间',
+  location: '地点',
+  stack: '技术栈',
+  link: '链接',
+  name: '名称',
+  school: '学校',
+  major: '专业',
+  degree: '学历',
+  gpa: '绩点',
+  title: '标题',
+  subtitle: '副标题',
+  issuer: '颁发方',
+  date: '日期',
+}

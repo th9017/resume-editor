@@ -1,4 +1,5 @@
 import MarkdownIt from 'markdown-it'
+import { FIELD_LABELS } from '../types'
 import type { DocStyle, ResumeDoc, ResumeItem, ResumeSection } from '../types'
 import { escapeHtml, isSafeImageSrc, isSafeLink } from './escape'
 import type { TemplateDef } from './templates'
@@ -47,23 +48,6 @@ const FIELD_LAYOUT: Record<string, FieldLayout> = {
     meta: ['date'],
     sub: ['issuer', 'link'],
   },
-}
-
-const FIELD_LABELS: Record<string, string> = {
-  company: '公司',
-  role: '职位',
-  period: '时间',
-  location: '地点',
-  stack: '技术栈',
-  link: '链接',
-  name: '名称',
-  school: '学校',
-  major: '专业',
-  degree: '学历',
-  gpa: '绩点',
-  title: '标题',
-  issuer: '颁发方',
-  date: '日期',
 }
 
 const md = new MarkdownIt({
@@ -177,7 +161,13 @@ function renderSection(
   env: RenderEnv,
 ): RenderedSection {
   const placement = resolvePlacement(section, template)
-  const hasContent = section.body.trim() !== '' || section.items.length > 0
+  const hasContent =
+    section.body.trim() !== '' ||
+    section.items.some(
+      (item) =>
+        Object.values(item.fields).some((value) => value.trim() !== '') ||
+        item.body.trim() !== '',
+    )
   if (!hasContent) return { html: '', placement }
 
   const title = `<h2 class="rv-section-title"><span>${escapeHtml(section.title)}</span></h2>`
