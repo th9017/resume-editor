@@ -37,6 +37,7 @@ import TopBar from './components/TopBar.vue'
 import SectionRail from './components/SectionRail.vue'
 import FormPanel from './components/FormPanel.vue'
 import TemplateDrawer from './components/TemplateDrawer.vue'
+import AddSectionMenu from './components/AddSectionMenu.vue'
 import PreviewPane from './components/PreviewPane.vue'
 import ConfirmDialog from './components/ConfirmDialog.vue'
 import PrintTipsDialog from './components/PrintTipsDialog.vue'
@@ -193,7 +194,7 @@ function handleSourcePlaceholder(): void {
 }
 
 function handleAddSectionPlaceholder(): void {
-  showToast('章节添加将在下一步接入')
+  editorState.addMenuOpen = true
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -348,6 +349,7 @@ onBeforeUnmount(() => {
     </div>
 
     <TemplateDrawer :open="drawerOpen" @close="drawerOpen = false" />
+    <AddSectionMenu />
     <ConfirmDialog />
     <PrintTipsDialog
       :open="printTipsOpen"

@@ -1,19 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import {
-  Award,
-  Briefcase,
-  FileText,
-  FolderKanban,
-  GraduationCap,
-  LayoutGrid,
-  Palette,
-  Plus,
-  User,
-  Wrench,
-} from 'lucide-vue-next'
+import { LayoutGrid, Palette, Plus, User } from 'lucide-vue-next'
 import type { DraftSection } from '../core/draft'
 import { SECTION_META } from '../core/types'
+import { sectionIcon } from './sectionIcons'
 
 const props = defineProps<{
   sections: DraftSection[]
@@ -26,32 +16,13 @@ const emit = defineEmits<{
   (event: 'template'): void
 }>()
 
-function iconFor(type: string) {
-  switch (type) {
-    case 'summary':
-      return FileText
-    case 'experience':
-      return Briefcase
-    case 'projects':
-      return FolderKanban
-    case 'education':
-      return GraduationCap
-    case 'skills':
-      return Wrench
-    case 'awards':
-      return Award
-    default:
-      return Plus
-  }
-}
-
 const items = computed(() => [
   { id: 'layout', label: '布局', icon: LayoutGrid },
   { id: 'basic', label: '基本信息', icon: User },
   ...props.sections.map((section) => ({
     id: section.id,
     label: section.title || SECTION_META[section.type]?.label || '自定义章节',
-    icon: iconFor(section.type),
+    icon: sectionIcon(section.type),
   })),
 ])
 </script>

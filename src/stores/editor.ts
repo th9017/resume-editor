@@ -26,6 +26,7 @@ export const editorState = reactive({
   activeView: 'basic' as ActiveView,
   sourceWarningOpen: false,
   sourceWarningMessage: '',
+  addMenuOpen: false,
 })
 
 export const draft: Ref<ResumeDraft | null> = ref(null)
@@ -56,6 +57,7 @@ export function loadFromContent(content: string): void {
   editorState.mode = 'form'
   editorState.activeView = 'basic'
   editorState.sourceWarningOpen = false
+  editorState.addMenuOpen = false
   draftRevision.value += 1
 }
 

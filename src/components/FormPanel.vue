@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import BasicInfoForm from './BasicInfoForm.vue'
+import LayoutPanel from './LayoutPanel.vue'
+import SectionForm from './SectionForm.vue'
 import { activeSection, draft, editorState } from '../stores/editor'
 import { SECTION_META } from '../core/types'
 
@@ -27,10 +29,12 @@ const subtitle = computed(() => {
       </div>
     </header>
     <div class="form-scroll">
-      <BasicInfoForm v-if="editorState.activeView === 'basic' && draft" />
+      <LayoutPanel v-if="editorState.activeView === 'layout'" />
+      <BasicInfoForm v-else-if="editorState.activeView === 'basic' && draft" />
+      <SectionForm v-else-if="activeSection" :section="activeSection" />
       <div v-else class="form-placeholder">
         <div class="ph-mark">◌</div>
-        <p>{{ editorState.activeView === 'layout' ? '布局面板' : '章节表单' }}将在下一步接入</p>
+        <p>选择一个章节开始编辑</p>
       </div>
     </div>
   </section>
