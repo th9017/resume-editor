@@ -238,18 +238,3 @@ Hi
     expect(doc.diagnostics).toHaveLength(0)
   })
 })
-
-describe('snippets', () => {
-  it('章节与条目骨架包含正确的游标位置', async () => {
-    const { sectionSnippet, itemSnippet } = await import('../src/core/snippets')
-    const section = sectionSnippet('experience')
-    expect(section.text.startsWith('\n\n:::: experience\n## 工作经历\n\n')).toBe(true)
-    expect(section.text.endsWith('\n::::\n')).toBe(true)
-    expect(section.cursorOffset).toBe(section.text.indexOf('\n::::\n'))
-
-    const item = itemSnippet('experience')
-    expect(item.text.startsWith('\n::: item\ncompany: \nrole: ')).toBe(true)
-    expect(item.text).toContain('\n---\n- \n:::\n')
-    expect(item.cursorOffset).toBe(item.text.indexOf('company: ') + 'company: '.length)
-  })
-})

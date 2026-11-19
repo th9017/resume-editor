@@ -156,7 +156,7 @@ scripts/                绿色版打包
 ## 测试
 
 ```bash
-npm test          # 100 个单元测试
+npm test          # 99 个单元测试
 npm run build     # vue-tsc + Vite 构建
 cd src-tauri && cargo check --offline
 npm run build:portable
