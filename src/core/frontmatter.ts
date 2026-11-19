@@ -378,6 +378,68 @@ export function patchAvatar(source: string, relativePath: string): string {
   return result
 }
 
+export interface IdentityInsertResult {
+  source: string
+  line: number
+  column: number
+}
+
+export function ensureIdentity(source: string): IdentityInsertResult {
+  const normalized = normalizeSource(source)
+  const read = readFrontmatter(normalized)
+  if (read.diagnostics.some((item) => item.code === 'FM_YAML' || item.code === 'FM_UNCLOSED')) {
+    throw new Error('frontmatter 有语法错误，请先修复')
+  }
+
+  const nameLine = 'name: '
+  const titleLine = 'title: '
+  const contactLines = ['contact:', '  phone: ""', '  email: ""', '  location: ""']
+
+  if (!read.fm) {
+    const body = normalized.replace(/^\n+/, '')
+    const result = `---\n${nameLine}\n${titleLine}\n${contactLines.join('\n')}\n---\n\n${body}`
+    return { source: result, line: 2, column: nameLine.length + 1 }
+  }
+
+  const lines = normalized.split('\n')
+  const closingIndex = read.fm.endLine - 1
+  const hasName = lines
+    .slice(1, closingIndex)
+    .some((line) => /^name\s*:/.test(line))
+  const hasTitle = lines
+    .slice(1, closingIndex)
+    .some((line) => /^title\s*:/.test(line))
+  const hasContact = lines
+    .slice(1, closingIndex)
+    .some((line) => /^contact\s*:/.test(line))
+
+  let nameIndex = lines.findIndex(
+    (line, index) => index > 0 && index < closingIndex && /^name\s*:/.test(line),
+  )
+
+  const inserts: string[] = []
+  if (!hasName) inserts.push(nameLine)
+  if (!hasTitle) inserts.push(titleLine)
+  if (!hasContact) inserts.push(...contactLines)
+
+  if (inserts.length > 0) {
+    lines.splice(closingIndex, 0, ...inserts)
+    if (!hasName) nameIndex = closingIndex
+  }
+
+  const result = lines.join('\n')
+  if (readFrontmatter(result).diagnostics.some((item) => item.code === 'FM_YAML')) {
+    throw new Error('写入个人信息后 frontmatter 校验失败，已取消修改')
+  }
+
+  if (nameIndex < 0) return { source: result, line: 1, column: 1 }
+  const nameText = lines[nameIndex]
+  const colon = nameText.indexOf(':')
+  let valueStart = colon >= 0 ? colon + 1 : 0
+  while (valueStart < nameText.length && nameText[valueStart] === ' ') valueStart++
+  return { source: result, line: nameIndex + 1, column: valueStart + 1 }
+}
+
 function styleBlock(style: DocStyle): string[] {
   return [
     'style:',

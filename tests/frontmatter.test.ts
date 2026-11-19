@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  ensureIdentity,
   patchAvatar,
   patchStyle,
   readFrontmatter,
@@ -171,5 +172,39 @@ describe('patchAvatar', () => {
     const read = readFrontmatter(next)
     expect(read.identity.avatar).toBe('assets/new.png')
     expect((next.match(/^avatar:/gm) ?? []).length).toBe(1)
+  })
+})
+
+describe('ensureIdentity', () => {
+  it('无 frontmatter 时插入完整骨架', () => {
+    const result = ensureIdentity('body')
+    expect(result.source.startsWith('---\nname: ')).toBe(true)
+    expect(result.line).toBe(2)
+    expect(result.column).toBe(7)
+    const read = readFrontmatter(result.source)
+    expect(read.identity.name).toBe('')
+    expect(read.body.trim()).toBe('body')
+  })
+
+  it('已有 name 时不重复并补齐 title/contact', () => {
+    const result = ensureIdentity('---\nname: 张三\n---\nbody')
+    expect((result.source.match(/^name:/gm) ?? []).length).toBe(1)
+    expect((result.source.match(/^title:/gm) ?? []).length).toBe(1)
+    expect((result.source.match(/^contact:/gm) ?? []).length).toBe(1)
+    expect(result.line).toBe(2)
+    expect(readFrontmatter(result.source).identity.name).toBe('张三')
+  })
+
+  it('个人信息完整时不改动内容', () => {
+    const source = '---\nname: 张三\ntitle: 工程师\ncontact:\n  email: a@b.c\n---\nbody'
+    const result = ensureIdentity(source)
+    expect((result.source.match(/^name:/gm) ?? []).length).toBe(1)
+    expect((result.source.match(/^title:/gm) ?? []).length).toBe(1)
+    expect((result.source.match(/^contact:/gm) ?? []).length).toBe(1)
+    expect(result.line).toBe(2)
+  })
+
+  it('YAML 错误时抛出', () => {
+    expect(() => ensureIdentity('---\nname: [broken\n---\nbody')).toThrow()
   })
 })

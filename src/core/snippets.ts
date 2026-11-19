@@ -30,3 +30,13 @@ export function identitySnippet(): Snippet {
     `---\nname: ${CURSOR}\ntitle: \ncontact:\n  phone: ""\n  email: ""\n  location: ""\n---\n\n`,
   )
 }
+
+export function sectionWithItemSnippet(type: string): Snippet {
+  const label = SECTION_META[type]?.label ?? type
+  const fields = SECTION_META[type]?.fields ?? []
+  const keys = fields.length > 0 ? fields : ['title']
+  const fieldLines = keys.map((key, index) => `${key}: ${index === 0 ? CURSOR : ''}`)
+  return finish(
+    `\n\n:::: ${type}\n## ${label}\n\n::: item\n${fieldLines.join('\n')}\n---\n- \n:::\n::::\n`,
+  )
+}

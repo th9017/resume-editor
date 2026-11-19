@@ -146,19 +146,53 @@ textarea {
   font-size: 11px;
 }
 
-.source {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  border: 0;
-  outline: 0;
-  resize: none;
-  padding: 16px 18px;
-  background: transparent;
-  color: #1e293b;
-  font-family: Consolas, "Courier New", monospace;
-  font-size: 13px;
-  line-height: 1.7;
+.insertbar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 12px;
+}
+
+.insertbar .label {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mini-select {
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid #dbe2ea;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 12px;
+}
+
+.mini-btn {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid #dbe2ea;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mini-btn:hover {
+  border-color: #94a3b8;
+}
+
+.insert-hint {
+  margin-left: auto;
+  color: #94a3b8;
+  font-size: 11px;
 }
 
 .preview-scroll {
