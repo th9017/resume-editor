@@ -10,6 +10,7 @@ import {
 } from './core/images'
 import { joinPath, parentDir, sanitizeFileName } from './core/paths'
 import { parseResume } from './core/parser'
+import { computeLayoutPlan, type LayoutPlan } from './core/measure'
 import { renderResume } from './core/render/renderer'
 import { getTemplate } from './core/render/templates'
 import { itemSnippet, sectionSnippet, sectionWithItemSnippet } from './core/snippets'
@@ -46,13 +47,23 @@ const editorRef = ref<ResumeEditorHandle>()
 const cursorLine = ref(1)
 const sectionType = ref('experience')
 const PRINT_TIPS_KEY = 'resume.printTipsDismissed.v1'
+const layout = ref<LayoutPlan>({ fit: 1, stacked: false, pageCount: 1 })
+const imageVersion = ref(0)
+let layoutJob = 0
+let layoutTimer: ReturnType<typeof setTimeout> | null = null
+let templateStyleEl: HTMLStyleElement | null = null
 
 const doc = computed(() => parseResume(docState.content))
 const template = computed(() => getTemplate(doc.value.style.template))
 const imageCache = reactive(new Map<string, string>())
 let imageJob = 0
 const html = computed(() =>
-  renderResume(doc.value, { template: template.value, resolveImage: resolvePreviewImage }),
+  renderResume(doc.value, {
+    template: template.value,
+    fit: layout.value.fit,
+    stacked: layout.value.stacked,
+    resolveImage: resolvePreviewImage,
+  }),
 )
 const displayName = computed(() => documentName.value)
 const issueCount = computed(
@@ -71,6 +82,19 @@ const currentSectionLabel = computed(() => {
   const section = currentSection.value
   if (!section) return '不在章节内'
   return SECTION_META[section.type]?.label ?? section.title
+})
+const layoutWarning = computed(() => {
+  const current = layout.value
+  if (current.fit < 0.999 && current.pageCount > 1) {
+    return `已压缩到 ${Math.round(current.fit * 100)}%，仍约 ${current.pageCount} 页，建议精简内容`
+  }
+  if (current.stacked) return '内容超过一页，双栏已降级为单栏（打印更稳定）'
+  return ''
+})
+const pageLabel = computed(() => {
+  const current = layout.value
+  const pages = `约 ${current.pageCount} 页`
+  return current.fit < 0.999 ? `${pages} · 缩放 ${Math.round(current.fit * 100)}%` : pages
 })
 
 function resolvePreviewImage(src: string): string {
@@ -91,14 +115,58 @@ watch(
       if (!absolute || imageCache.has(absolute)) continue
       try {
         const dataUrl = await fileToDataUrl(absolute, readBinaryFile)
-        if (job === imageJob) imageCache.set(absolute, dataUrl)
+        if (job === imageJob) {
+          imageCache.set(absolute, dataUrl)
+          imageVersion.value++
+        }
       } catch {
-        if (job === imageJob) imageCache.set(absolute, '')
+        if (job === imageJob) {
+          imageCache.set(absolute, '')
+          imageVersion.value++
+        }
       }
     }
   },
   { immediate: true },
 )
+
+watch(
+  () => template.value.css,
+  (css) => {
+    if (!templateStyleEl) {
+      templateStyleEl = document.createElement('style')
+      templateStyleEl.dataset.rvTemplate = 'true'
+      document.head.appendChild(templateStyleEl)
+    }
+    templateStyleEl.textContent = css
+  },
+  { immediate: true },
+)
+
+async function recomputeLayout(): Promise<void> {
+  const job = ++layoutJob
+  const context = {
+    doc: doc.value,
+    template: template.value,
+    resolveImage: resolvePreviewImage,
+  }
+  try {
+    const plan = await computeLayoutPlan(context)
+    if (job === layoutJob) layout.value = plan
+  } catch {
+    if (job === layoutJob) layout.value = { fit: 1, stacked: false, pageCount: 1 }
+  }
+}
+
+function scheduleLayout(): void {
+  if (layoutTimer) clearTimeout(layoutTimer)
+  layoutTimer = setTimeout(() => {
+    layoutTimer = null
+    void recomputeLayout()
+  }, 200)
+}
+
+watch([() => docState.content, imageVersion], scheduleLayout, { immediate: true })
 
 function onUpdate(value: string): void {
   docState.content = value
@@ -310,6 +378,15 @@ async function runPrint(): Promise<void> {
   try {
     const parsed = doc.value
     const imageUrls = await buildImageMap(parsed, docState.path, readBinaryFile)
+    const printResolver = (src: string): string => {
+      if (/^(https?:|data:|blob:|asset:)/i.test(src)) return src
+      return imageUrls.get(src) ?? ''
+    }
+    const plan = await computeLayoutPlan({
+      doc: parsed,
+      template: template.value,
+      resolveImage: printResolver,
+    })
     const name = parsed.identity.name.trim()
     const title = name ? `${sanitizeFileName(name)}-简历` : '我的简历'
     const printDocument = buildResumePrintHtml({
@@ -317,9 +394,11 @@ async function runPrint(): Promise<void> {
       template: template.value,
       title,
       imageUrls,
+      fit: plan.fit,
+      stacked: plan.stacked,
     })
     await printHtml(printDocument)
-    showToast('已调起打印预览，请另存为 PDF')
+    showToast(`已调起打印预览（约 ${plan.pageCount} 页），请另存为 PDF`)
   } catch (error) {
     showToast(`导出失败：${messageOf(error)}`, 'error')
   } finally {
@@ -335,6 +414,13 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeydown)
+  if (layoutTimer) {
+    clearTimeout(layoutTimer)
+    layoutTimer = null
+  }
+  layoutJob++
+  templateStyleEl?.remove()
+  templateStyleEl = null
 })
 </script>
 
@@ -392,9 +478,12 @@ onBeforeUnmount(() => {
       <section class="pane preview-pane">
         <div class="pane-head">
           <span>A4 预览</span>
-          <span class="muted">{{ template.name }}</span>
+          <span class="muted">
+            {{ template.name }}<template v-if="layout.stacked"> · 已降级单栏</template>
+          </span>
         </div>
-        <PreviewPane :html="html" :css="template.css" />
+        <div v-if="layoutWarning" class="layout-note">{{ layoutWarning }}</div>
+        <PreviewPane :html="html" :page-count="layout.pageCount" />
       </section>
     </main>
 
@@ -406,6 +495,8 @@ onBeforeUnmount(() => {
       <span :class="{ 'status-warn': saveLabel === '未保存' }">{{ saveLabel }}</span>
       <span class="dot">·</span>
       <span>{{ template.name }}</span>
+      <span class="dot">·</span>
+      <span>{{ pageLabel }}</span>
       <span class="dot">·</span>
       <span>L{{ cursorLine }}</span>
       <span class="spacer"></span>

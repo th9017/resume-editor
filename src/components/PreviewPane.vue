@@ -1,25 +1,16 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { openExternal } from '../tauri'
 
-const props = defineProps<{ html: string; css: string }>()
+const props = defineProps<{ html: string; pageCount: number }>()
 const scrollRef = ref<HTMLDivElement>()
 const zoom = ref(1)
 let observer: ResizeObserver | null = null
-let styleElement: HTMLStyleElement | null = null
 
-watch(
-  () => props.css,
-  (css) => {
-    if (!styleElement) {
-      styleElement = document.createElement('style')
-      styleElement.dataset.rvTemplate = 'true'
-      document.head.appendChild(styleElement)
-    }
-    styleElement.textContent = css
-  },
-  { immediate: true },
-)
+const guidePages = computed(() => {
+  const count = Math.max(0, props.pageCount - 1)
+  return Array.from({ length: count }, (_, index) => index + 1)
+})
 
 function updateZoom(): void {
   const element = scrollRef.value
@@ -38,8 +29,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   observer?.disconnect()
   observer = null
-  styleElement?.remove()
-  styleElement = null
 })
 
 function onClick(event: MouseEvent): void {
@@ -56,6 +45,14 @@ function onClick(event: MouseEvent): void {
   <div ref="scrollRef" class="preview-scroll">
     <div class="rv-stage">
       <div class="rv-sheet" :style="{ zoom }" @click="onClick">
+        <div
+          v-for="page in guidePages"
+          :key="page"
+          class="rv-guide"
+          :style="{ top: `${page * 297}mm` }"
+        >
+          <span>第 {{ page + 1 }} 页</span>
+        </div>
         <div v-if="props.html" v-html="props.html"></div>
         <div v-else class="rv-empty">在左侧输入内容开始预览</div>
       </div>
