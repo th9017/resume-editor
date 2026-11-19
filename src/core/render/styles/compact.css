@@ -1,0 +1,27 @@
+.rv.rv--compact .rv-header {
+  margin-bottom: 0.65em;
+  padding-bottom: 0.55em;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.rv.rv--compact .rv-avatar {
+  width: 16mm;
+  height: 16mm;
+}
+
+.rv.rv--compact .rv-name {
+  font-size: 1.8em;
+}
+
+.rv.rv--compact .rv-section-title {
+  padding-bottom: 0.12em;
+  font-size: 1em;
+}
+
+.rv.rv--compact .rv-section-title::after {
+  display: none;
+}
+
+.rv.rv--compact .rv-item-head {
+  gap: 0.6em;
+}

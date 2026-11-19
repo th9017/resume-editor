@@ -1,0 +1,22 @@
+.rv.rv--classic .rv-header {
+  margin-bottom: 1.1em;
+  padding-bottom: 0.9em;
+  border-bottom: 2px solid var(--rv-accent);
+}
+
+.rv.rv--classic .rv-identity {
+  align-items: flex-end;
+}
+
+.rv.rv--classic .rv-name {
+  color: #0f172a;
+}
+
+.rv.rv--classic .rv-section-title {
+  border-bottom: 1px solid var(--rv-accent-soft);
+  color: #1e3a8a;
+}
+
+.rv.rv--classic .rv-section-title::after {
+  display: none;
+}

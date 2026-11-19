@@ -273,3 +273,8 @@ textarea {
 .spacer {
   flex: 1;
 }
+
+.status-warn {
+  color: #b45309;
+  font-weight: 600;
+}

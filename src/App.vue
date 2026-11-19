@@ -1,46 +1,53 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { patchStyle } from './core/frontmatter'
+import { parseResume } from './core/parser'
+import { renderResume } from './core/render/renderer'
+import { getTemplate } from './core/render/templates'
 import { printHtml } from './core/print'
+import type { DocStyle } from './core/types'
 import { buildPrintSpikeHtml } from './samples/printSpike'
+import { SHOWCASE_MARKDOWN } from './samples/showcase'
+import PreviewPane from './components/PreviewPane.vue'
+import StyleBar from './components/StyleBar.vue'
 
+const source = ref(SHOWCASE_MARKDOWN)
 const printing = ref(false)
 const message = ref('')
 
-const source = ref(`---
-name: 张一鸣
-title: 高级前端工程师
----
+const doc = computed(() => parseResume(source.value))
+const template = computed(() => getTemplate(doc.value.style.template))
+const html = computed(() => renderResume(doc.value, { template: template.value }))
+const displayName = computed(() => doc.value.identity.name || '未命名简历')
+const issueCount = computed(
+  () => doc.value.diagnostics.filter((item) => item.severity !== 'info').length,
+)
 
-:::: summary
-## 个人简介
-7 年前端经验，专注桌面端与数据密集型 Web 应用。
-::::
+function flash(text: string): void {
+  message.value = text
+  setTimeout(() => {
+    message.value = ''
+  }, 6000)
+}
 
-:::: experience
-## 工作经历
-
-::: item
-company: 蓝鲸科技
-role: 高级前端工程师
-period: 2022.06 — 至今
----
-- 主导桌面端 Markdown 编辑器，首屏加载从 1.8s 降至 0.6s。
-:::
-::::`)
+function applyStyle(patch: Partial<DocStyle>): void {
+  try {
+    source.value = patchStyle(source.value, patch)
+    message.value = ''
+  } catch (error) {
+    flash(error instanceof Error ? error.message : String(error))
+  }
+}
 
 async function runPrintSpike(): Promise<void> {
   printing.value = true
-  message.value = ''
   try {
     await printHtml(buildPrintSpikeHtml())
-    message.value = '已调起打印预览，请按提示检查 A4 版式'
+    flash('已调起打印预览，请按提示检查 A4 版式')
   } catch (error) {
-    message.value = error instanceof Error ? error.message : String(error)
+    flash(error instanceof Error ? error.message : String(error))
   } finally {
     printing.value = false
-    setTimeout(() => {
-      message.value = ''
-    }, 6000)
   }
 }
 </script>
@@ -50,7 +57,7 @@ async function runPrintSpike(): Promise<void> {
     <header class="toolbar">
       <div class="brand">
         简历编辑器
-        <span class="tag">T1 · 打印 spike</span>
+        <span class="tag">T3 · 模板预览</span>
       </div>
       <div class="actions">
         <button class="btn primary" :disabled="printing" @click="runPrintSpike">
@@ -59,11 +66,13 @@ async function runPrintSpike(): Promise<void> {
       </div>
     </header>
 
+    <StyleBar :doc-style="doc.style" @change="applyStyle" />
+
     <main class="workspace">
       <section class="pane editor-pane">
         <div class="pane-head">
           <span>Markdown 源码</span>
-          <span class="muted">占位，T2/T4 接入解析与编辑器</span>
+          <span class="muted">T4 接入 CodeMirror</span>
         </div>
         <textarea v-model="source" class="source" spellcheck="false" aria-label="Markdown 源码"></textarea>
       </section>
@@ -71,68 +80,21 @@ async function runPrintSpike(): Promise<void> {
       <section class="pane preview-pane">
         <div class="pane-head">
           <span>A4 预览</span>
-          <span class="muted">静态占位，T3 接入真实渲染</span>
+          <span class="muted">{{ template.name }}</span>
         </div>
-        <div class="preview-scroll">
-          <article class="sheet demo-sheet">
-            <header class="demo-header">
-              <div>
-                <div class="demo-name">张一鸣</div>
-                <div class="demo-title">高级前端工程师</div>
-              </div>
-              <div class="demo-contact">
-                <div>138-0000-0000</div>
-                <div>zhang.yiming@example.com</div>
-                <div>上海 · github.com/example</div>
-              </div>
-            </header>
-
-            <section class="demo-section">
-              <h2>个人简介</h2>
-              <p>
-                7 年前端经验，专注桌面端与数据密集型 Web 应用。擅长 TypeScript、Vue 3、Tauri
-                与前端工程化，主导过 3 个从 0 到 1 的产品。
-              </p>
-            </section>
-
-            <section class="demo-section">
-              <h2>工作经历</h2>
-              <div class="demo-item">
-                <div class="demo-item-head">
-                  <strong>蓝鲸科技 · 高级前端工程师</strong>
-                  <span>2022.06 — 至今</span>
-                </div>
-                <ul>
-                  <li>主导桌面端 Markdown 编辑器，首屏加载从 1.8s 降至 0.6s。</li>
-                  <li>建立前端质量门禁，线上事故减少 50%。</li>
-                </ul>
-              </div>
-              <div class="demo-item">
-                <div class="demo-item-head">
-                  <strong>海豚网络 · 前端工程师</strong>
-                  <span>2019.07 — 2022.05</span>
-                </div>
-                <ul>
-                  <li>负责数据看板迁移，页面渲染性能提升 2 倍。</li>
-                </ul>
-              </div>
-            </section>
-
-            <section class="demo-section">
-              <h2>专业技能</h2>
-              <p>TypeScript · Vue 3 · Tauri 2 · WebView2 · Vite · Vitest</p>
-            </section>
-          </article>
-        </div>
+        <PreviewPane :html="html" :css="template.css" />
       </section>
     </main>
 
     <footer class="statusbar">
-      <span>未命名简历</span>
+      <span>{{ displayName }}</span>
+      <span class="dot">·</span>
+      <span>{{ template.name }}</span>
       <span class="dot">·</span>
       <span>A4 210×297mm</span>
       <span class="spacer"></span>
-      <span>{{ message || '等待接入 Markdown 解析与 PDF 导出' }}</span>
+      <span v-if="issueCount" class="status-warn">{{ issueCount }} 条语法提示</span>
+      <span>{{ message || '样式设置会写入 frontmatter' }}</span>
     </footer>
   </div>
 </template>

@@ -1,0 +1,29 @@
+.rv-stage {
+  display: flex;
+  min-height: 100%;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.rv-sheet {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 14mm 16mm;
+  background: #ffffff;
+  box-sizing: border-box;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.08),
+    0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.rv-sheet > .rv {
+  width: 100%;
+}
+
+.rv-empty {
+  padding: 40mm 0;
+  color: #94a3b8;
+  font-size: 13px;
+  text-align: center;
+}

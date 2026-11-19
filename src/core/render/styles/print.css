@@ -1,0 +1,40 @@
+@page {
+  size: A4 portrait;
+  margin: 14mm 16mm;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+}
+
+.rv {
+  width: auto;
+}
+
+.rv-item,
+.rv-item-body li,
+.rv-header,
+.rv-identity {
+  break-inside: avoid;
+}
+
+.rv-section-title,
+.rv-item-head {
+  break-after: avoid;
+}
+
+.rv p,
+.rv li {
+  orphans: 2;
+  widows: 2;
+}
+
+html,
+body,
+.rv {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
