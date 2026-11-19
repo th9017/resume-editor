@@ -57,6 +57,28 @@ export async function fileToDataUrl(
   return `data:${mime};base64,${btoa(binary)}`
 }
 
+export async function buildImageMap(
+  doc: ResumeDoc,
+  docPath: string,
+  reader: (path: string) => Promise<Uint8Array>,
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>()
+  for (const ref of collectImageRefs(doc)) {
+    if (!isLocalImageRef(ref)) continue
+    const absolute = resolveImagePath(docPath, ref)
+    if (!absolute) {
+      map.set(ref, '')
+      continue
+    }
+    try {
+      map.set(ref, await fileToDataUrl(absolute, reader))
+    } catch {
+      map.set(ref, '')
+    }
+  }
+  return map
+}
+
 export function assetFileName(prefix: string, ext: string): string {
   const now = new Date()
   const pad = (value: number): string => String(value).padStart(2, '0')

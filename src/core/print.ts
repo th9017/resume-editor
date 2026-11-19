@@ -1,3 +1,45 @@
+import printCss from './render/styles/print.css?raw'
+import { escapeHtml } from './render/escape'
+import { renderResume } from './render/renderer'
+import type { TemplateDef } from './render/templates'
+import type { ResumeDoc } from './types'
+
+export interface ResumePrintOptions {
+  doc: ResumeDoc
+  template: TemplateDef
+  title: string
+  imageUrls: Map<string, string>
+  fit?: number
+  stacked?: boolean
+}
+
+/** 组装与预览共用模板 CSS 的自包含打印 HTML（无脚本） */
+export function buildResumePrintHtml(options: ResumePrintOptions): string {
+  const { doc, template, title, imageUrls } = options
+  const article = renderResume(doc, {
+    template,
+    fit: options.fit,
+    stacked: options.stacked,
+    resolveImage: (src) => {
+      if (/^(https?:|data:|blob:|asset:)/i.test(src)) return src
+      return imageUrls.get(src) ?? ''
+    },
+  })
+
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>${escapeHtml(title)}</title>
+<style>${template.css}</style>
+<style>${printCss}</style>
+</head>
+<body>
+${article}
+</body>
+</html>`
+}
+
 /** 通过隐藏 iframe 调起系统打印（可另存为 PDF） */
 export async function printHtml(html: string): Promise<void> {
   const iframe = document.createElement('iframe')

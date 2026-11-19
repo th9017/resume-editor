@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { ensureIdentity, patchAvatar, patchStyle } from './core/frontmatter'
-import { assetFileName, collectImageRefs, fileToDataUrl, resolveImagePath } from './core/images'
-import { joinPath, parentDir } from './core/paths'
+import {
+  assetFileName,
+  buildImageMap,
+  collectImageRefs,
+  fileToDataUrl,
+  resolveImagePath,
+} from './core/images'
+import { joinPath, parentDir, sanitizeFileName } from './core/paths'
 import { parseResume } from './core/parser'
 import { renderResume } from './core/render/renderer'
 import { getTemplate } from './core/render/templates'
 import { itemSnippet, sectionSnippet, sectionWithItemSnippet } from './core/snippets'
 import { SECTION_META, SECTION_OPTIONS } from './core/types'
 import type { DocStyle } from './core/types'
-import { printHtml } from './core/print'
-import { buildPrintSpikeHtml } from './samples/printSpike'
+import { buildResumePrintHtml, printHtml } from './core/print'
 import { assetUrl, ensureDir, pickImageFile, readBinaryFile, writeBinaryFile } from './tauri'
 import {
   appState,
@@ -29,15 +34,18 @@ import CodeMirrorEditor from './components/CodeMirrorEditor.vue'
 import ConfirmDialog from './components/ConfirmDialog.vue'
 import DiagnosticsBar from './components/DiagnosticsBar.vue'
 import PreviewPane from './components/PreviewPane.vue'
+import PrintTipsDialog from './components/PrintTipsDialog.vue'
 import RecentMenu from './components/RecentMenu.vue'
 import StyleBar from './components/StyleBar.vue'
 import Toast from './components/Toast.vue'
 import type { CursorPosition, ResumeEditorHandle } from './components/editorTypes'
 
 const printing = ref(false)
+const printTipsOpen = ref(false)
 const editorRef = ref<ResumeEditorHandle>()
 const cursorLine = ref(1)
 const sectionType = ref('experience')
+const PRINT_TIPS_KEY = 'resume.printTipsDismissed.v1'
 
 const doc = computed(() => parseResume(docState.content))
 const template = computed(() => getTemplate(doc.value.style.template))
@@ -267,13 +275,53 @@ function onKeydown(event: KeyboardEvent): void {
   }
 }
 
-async function runPrintSpike(): Promise<void> {
+function printTipsDismissed(): boolean {
+  try {
+    return localStorage.getItem(PRINT_TIPS_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function rememberPrintTips(): void {
+  try {
+    localStorage.setItem(PRINT_TIPS_KEY, '1')
+  } catch {
+    /* 偏好保存失败时忽略 */
+  }
+}
+
+function handleExport(): void {
+  if (printTipsDismissed()) {
+    void runPrint()
+    return
+  }
+  printTipsOpen.value = true
+}
+
+function onPrintTipsConfirm(dontShow: boolean): void {
+  if (dontShow) rememberPrintTips()
+  printTipsOpen.value = false
+  void runPrint()
+}
+
+async function runPrint(): Promise<void> {
   printing.value = true
   try {
-    await printHtml(buildPrintSpikeHtml())
-    showToast('已调起打印预览，请按提示检查 A4 版式')
+    const parsed = doc.value
+    const imageUrls = await buildImageMap(parsed, docState.path, readBinaryFile)
+    const name = parsed.identity.name.trim()
+    const title = name ? `${sanitizeFileName(name)}-简历` : '我的简历'
+    const printDocument = buildResumePrintHtml({
+      doc: parsed,
+      template: template.value,
+      title,
+      imageUrls,
+    })
+    await printHtml(printDocument)
+    showToast('已调起打印预览，请另存为 PDF')
   } catch (error) {
-    showToast(error instanceof Error ? error.message : String(error), 'error')
+    showToast(`导出失败：${messageOf(error)}`, 'error')
   } finally {
     printing.value = false
   }
@@ -295,7 +343,7 @@ onBeforeUnmount(() => {
     <header class="toolbar">
       <div class="brand">
         简历编辑器
-        <span class="tag">T6 · 图片与头像</span>
+        <span class="tag">T7 · PDF 导出</span>
       </div>
       <div class="actions">
         <button class="btn" @click="handleNew">新建</button>
@@ -303,8 +351,8 @@ onBeforeUnmount(() => {
         <button class="btn" @click="handleSave">保存</button>
         <button class="btn" @click="handleSaveAs">另存为</button>
         <RecentMenu :items="appState.recent" @open="handleOpen" />
-        <button class="btn primary" :disabled="printing" @click="runPrintSpike">
-          {{ printing ? '准备打印…' : '打印 A4 测试' }}
+        <button class="btn primary" :disabled="printing" @click="handleExport">
+          {{ printing ? '准备打印…' : '导出 PDF' }}
         </button>
       </div>
     </header>
@@ -369,6 +417,11 @@ onBeforeUnmount(() => {
     </footer>
 
     <ConfirmDialog />
+    <PrintTipsDialog
+      :open="printTipsOpen"
+      @confirm="onPrintTipsConfirm"
+      @cancel="printTipsOpen = false"
+    />
     <Toast />
   </div>
 </template>

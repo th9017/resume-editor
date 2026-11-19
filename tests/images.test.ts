@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   assetFileName,
+  buildImageMap,
   collectImageRefs,
   fileToDataUrl,
   isLocalImageRef,
@@ -65,5 +66,26 @@ logo: ![字段图](assets/logo.png)
   it('生成带时间戳与随机后缀的资源文件名', () => {
     expect(assetFileName('img', 'png')).toMatch(/^img-\d{8}-\d{6}-[a-z0-9]{4}\.png$/)
     expect(assetFileName('avatar', 'jpg')).toMatch(/^avatar-\d{8}-\d{6}-[a-z0-9]{4}\.jpg$/)
+  })
+
+  it('buildImageMap 读取本地图片并标记缺失项', async () => {
+    const doc = parseResume(`---
+name: 张三
+avatar: assets/avatar.png
+---
+:::: skills
+## 技能
+![图](assets/a.png)
+![缺](assets/missing.png)
+::::`)
+    const reader = async (path: string): Promise<Uint8Array> => {
+      if (path.endsWith('missing.png')) throw new Error('not found')
+      if (path.endsWith('avatar.png')) return new Uint8Array([1])
+      return new Uint8Array([2])
+    }
+    const map = await buildImageMap(doc, 'C:\\docs\\resume.md', reader)
+    expect(map.get('assets/avatar.png')).toBe('data:image/png;base64,AQ==')
+    expect(map.get('assets/a.png')).toBe('data:image/png;base64,Ag==')
+    expect(map.get('assets/missing.png')).toBe('')
   })
 })
