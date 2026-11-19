@@ -1,6 +1,7 @@
 import { computed, reactive, watch } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { baseName, sanitizeFileName } from '../core/paths'
+import { collectImageRefs, resolveImagePath } from '../core/images'
+import { baseName, isAbsolutePath, parentDir, sanitizeFileName } from '../core/paths'
 import { parseResume } from '../core/parser'
 import {
   loadRecent,
@@ -13,10 +14,14 @@ import {
 } from '../core/recent'
 import { STARTER_MARKDOWN } from '../samples/starter'
 import {
+  ensureDir,
+  fileExists,
   fileMtime,
   pickMarkdownFile,
   pickSavePath,
+  readBinaryFile,
   readTextFile,
+  writeBinaryFile,
   writeTextFile,
 } from '../tauri'
 
@@ -128,6 +133,7 @@ export async function saveDocumentAs(options: { silent?: boolean } = {}): Promis
   }
   if (!target) return false
   const finalPath = /\.(md|markdown)$/i.test(target) ? target : `${target}.md`
+  const previousPath = docState.path
   saving = true
   const content = docState.content
   try {
@@ -138,7 +144,13 @@ export async function saveDocumentAs(options: { silent?: boolean } = {}): Promis
     docState.lastSavedAt = nowLabel()
     addRecent(finalPath, content)
     void refreshWindowTitle()
-    if (!options.silent) showToast('已保存')
+    const copied = await copyAssetsForSaveAs(previousPath, finalPath, content)
+    if (!options.silent) {
+      const parts = ['已保存']
+      if (copied.copied > 0) parts.push(`复制 ${copied.copied} 张图片`)
+      if (copied.skipped > 0) parts.push(`跳过 ${copied.skipped} 张`)
+      showToast(parts.join('，'))
+    }
     return true
   } catch (error) {
     showToast(`保存失败：${messageOf(error)}`, 'error')
@@ -268,6 +280,48 @@ function loadAutoSave(): boolean {
   } catch {
     return true
   }
+}
+
+interface CopyAssetsResult {
+  copied: number
+  skipped: number
+}
+
+async function copyAssetsForSaveAs(
+  previousPath: string,
+  nextPath: string,
+  content: string,
+): Promise<CopyAssetsResult> {
+  const none: CopyAssetsResult = { copied: 0, skipped: 0 }
+  if (!previousPath || parentDir(previousPath) === parentDir(nextPath)) return none
+  const refs = collectImageRefs(parseResume(content)).filter((ref) => !isAbsolutePath(ref))
+  if (refs.length === 0) return none
+  const confirmed =
+    typeof window === 'undefined'
+      ? false
+      : window.confirm(`检测到 ${refs.length} 张本地图片，是否复制到新目录？`)
+  if (!confirmed) return none
+
+  let copied = 0
+  let skipped = 0
+  for (const ref of refs) {
+    const source = resolveImagePath(previousPath, ref)
+    const target = resolveImagePath(nextPath, ref)
+    if (!source || !target || source === target) continue
+    try {
+      if (await fileExists(target)) {
+        skipped++
+        continue
+      }
+      const bytes = await readBinaryFile(source)
+      await ensureDir(parentDir(target))
+      await writeBinaryFile(target, bytes)
+      copied++
+    } catch {
+      skipped++
+    }
+  }
+  return { copied, skipped }
 }
 
 function nowLabel(): string {

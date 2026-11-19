@@ -312,6 +312,12 @@
   margin-top: 0;
 }
 
-.rv .rv-img-invalid {
-  display: none;
+.rv .rv-img-missing {
+  display: inline-block;
+  padding: 0.1em 0.4em;
+  border: 1px dashed #cbd5e1;
+  border-radius: 3px;
+  background: #f8fafc;
+  color: #94a3b8;
+  font-size: 0.9em;
 }

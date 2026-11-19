@@ -12,6 +12,7 @@ const props = defineProps<{ value: string }>()
 const emit = defineEmits<{
   (event: 'update', value: string): void
   (event: 'cursor', position: CursorPosition): void
+  (event: 'paste-images', files: File[]): void
 }>()
 
 const host = ref<HTMLDivElement>()
@@ -68,6 +69,17 @@ function build(): void {
         indentUnit.of('  '),
         EditorState.tabSize.of(2),
         keymap.of([indentWithTab]),
+        EditorView.domEventHandlers({
+          paste: (event) => {
+            const files = Array.from(event.clipboardData?.files ?? []).filter((file) =>
+              file.type.startsWith('image/'),
+            )
+            if (files.length === 0) return false
+            event.preventDefault()
+            emit('paste-images', files)
+            return true
+          },
+        }),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) emit('update', update.state.doc.toString())
           if (update.docChanged || update.selectionSet) emitCursor(update.state)

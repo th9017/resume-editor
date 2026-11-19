@@ -92,13 +92,11 @@ md.renderer.rules.image = (tokens, index, options, env, self) => {
   const resolve = (env as RenderEnv | undefined)?.resolveImage
   const resolved = resolve ? resolve(raw) : raw
   if (!isSafeImageSrc(resolved)) {
-    token.attrSet('src', '')
-    token.attrSet('alt', token.content || '图片')
-    token.attrSet('class', 'rv-img-invalid')
-  } else {
-    token.attrSet('src', resolved)
-    token.attrSet('alt', token.content || '')
+    const alt = escapeHtml(token.content || '图片')
+    return `<span class="rv-img-missing" role="img" aria-label="${alt}">[图片缺失]</span>`
   }
+  token.attrSet('src', resolved)
+  token.attrSet('alt', token.content || '')
   return self.renderToken(tokens, index, options)
 }
 

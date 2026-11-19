@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { ensureIdentity, patchStyle } from './core/frontmatter'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { ensureIdentity, patchAvatar, patchStyle } from './core/frontmatter'
+import { assetFileName, collectImageRefs, fileToDataUrl, resolveImagePath } from './core/images'
+import { joinPath, parentDir } from './core/paths'
 import { parseResume } from './core/parser'
 import { renderResume } from './core/render/renderer'
 import { getTemplate } from './core/render/templates'
@@ -9,6 +11,7 @@ import { SECTION_META, SECTION_OPTIONS } from './core/types'
 import type { DocStyle } from './core/types'
 import { printHtml } from './core/print'
 import { buildPrintSpikeHtml } from './samples/printSpike'
+import { assetUrl, ensureDir, pickImageFile, readBinaryFile, writeBinaryFile } from './tauri'
 import {
   appState,
   bindCloseHandler,
@@ -38,7 +41,11 @@ const sectionType = ref('experience')
 
 const doc = computed(() => parseResume(docState.content))
 const template = computed(() => getTemplate(doc.value.style.template))
-const html = computed(() => renderResume(doc.value, { template: template.value }))
+const imageCache = reactive(new Map<string, string>())
+let imageJob = 0
+const html = computed(() =>
+  renderResume(doc.value, { template: template.value, resolveImage: resolvePreviewImage }),
+)
 const displayName = computed(() => documentName.value)
 const issueCount = computed(
   () => doc.value.diagnostics.filter((item) => item.severity !== 'info').length,
@@ -57,6 +64,33 @@ const currentSectionLabel = computed(() => {
   if (!section) return '不在章节内'
   return SECTION_META[section.type]?.label ?? section.title
 })
+
+function resolvePreviewImage(src: string): string {
+  if (/^(https?:|data:|blob:|asset:)/i.test(src)) return src
+  const absolute = resolveImagePath(docState.path, src)
+  if (!absolute) return ''
+  const cached = imageCache.get(absolute)
+  if (cached !== undefined) return cached
+  return assetUrl(absolute)
+}
+
+watch(
+  [() => docState.path, () => docState.content],
+  async () => {
+    const job = ++imageJob
+    for (const ref of collectImageRefs(doc.value)) {
+      const absolute = resolveImagePath(docState.path, ref)
+      if (!absolute || imageCache.has(absolute)) continue
+      try {
+        const dataUrl = await fileToDataUrl(absolute, readBinaryFile)
+        if (job === imageJob) imageCache.set(absolute, dataUrl)
+      } catch {
+        if (job === imageJob) imageCache.set(absolute, '')
+      }
+    }
+  },
+  { immediate: true },
+)
 
 function onUpdate(value: string): void {
   docState.content = value
@@ -116,6 +150,79 @@ async function insertIdentity(): Promise<void> {
   } catch (error) {
     showToast(error instanceof Error ? error.message : String(error), 'error')
   }
+}
+
+async function handlePasteImages(files: File[]): Promise<void> {
+  if (!docState.path) {
+    showToast('请先保存文档，再插入图片', 'error')
+    return
+  }
+  const allowed = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
+  const assetsDir = joinPath(parentDir(docState.path), 'assets')
+  const refs: string[] = []
+  try {
+    await ensureDir(assetsDir)
+    for (const file of files) {
+      if (!allowed.has(file.type)) {
+        showToast(`不支持的图片格式：${file.type || '未知'}`, 'error')
+        continue
+      }
+      const bytes = new Uint8Array(await file.arrayBuffer())
+      if (bytes.length > 5 * 1024 * 1024 && !window.confirm('图片大于 5MB，仍要插入吗？')) {
+        continue
+      }
+      const ext = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1]
+      const name = assetFileName('img', ext)
+      await writeBinaryFile(joinPath(assetsDir, name), bytes)
+      refs.push(`assets/${name}`)
+    }
+  } catch (error) {
+    showToast(`图片保存失败：${messageOf(error)}`, 'error')
+    return
+  }
+  if (refs.length === 0) return
+  const markdown = refs
+    .map((ref, index) => `![图片${refs.length > 1 ? index + 1 : ''}](${ref})`)
+    .join('\n')
+  editorRef.value?.insertAtCursor(markdown)
+  showToast(`已插入 ${refs.length} 张图片`)
+}
+
+async function setAvatar(): Promise<void> {
+  if (!docState.path) {
+    showToast('请先保存文档，再设置头像', 'error')
+    return
+  }
+  let selected: string | null = null
+  try {
+    selected = await pickImageFile()
+  } catch (error) {
+    showToast(`无法打开图片对话框：${messageOf(error)}`, 'error')
+    return
+  }
+  if (!selected) return
+  const rawExt = selected.split('.').pop()?.toLowerCase() ?? ''
+  const ext = rawExt === 'jpeg' ? 'jpg' : rawExt
+  if (!['png', 'jpg', 'webp', 'gif'].includes(ext)) {
+    showToast('仅支持 PNG/JPG/WebP/GIF 图片', 'error')
+    return
+  }
+  try {
+    const bytes = await readBinaryFile(selected)
+    if (bytes.length > 5 * 1024 * 1024 && !window.confirm('图片大于 5MB，仍要使用吗？')) return
+    const assetsDir = joinPath(parentDir(docState.path), 'assets')
+    await ensureDir(assetsDir)
+    const name = assetFileName('avatar', ext)
+    await writeBinaryFile(joinPath(assetsDir, name), bytes)
+    docState.content = patchAvatar(docState.content, `assets/${name}`)
+    showToast('头像已更新')
+  } catch (error) {
+    showToast(`头像设置失败：${messageOf(error)}`, 'error')
+  }
+}
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }
 
 async function handleNew(): Promise<void> {
@@ -188,7 +295,7 @@ onBeforeUnmount(() => {
     <header class="toolbar">
       <div class="brand">
         简历编辑器
-        <span class="tag">T5 · 文件与保存</span>
+        <span class="tag">T6 · 图片与头像</span>
       </div>
       <div class="actions">
         <button class="btn" @click="handleNew">新建</button>
@@ -214,6 +321,7 @@ onBeforeUnmount(() => {
       <button class="mini-btn" @click="insertSection">章节</button>
       <button class="mini-btn" @click="insertItem">条目</button>
       <button class="mini-btn" @click="insertIdentity">个人信息</button>
+      <button class="mini-btn" @click="setAvatar">头像</button>
       <span class="insert-hint">当前章节：{{ currentSectionLabel }}</span>
     </div>
 
@@ -228,6 +336,7 @@ onBeforeUnmount(() => {
           :value="docState.content"
           @update="onUpdate"
           @cursor="onCursor"
+          @paste-images="handlePasteImages"
         />
         <DiagnosticsBar :diagnostics="doc.diagnostics" @jump="jumpTo" />
       </section>

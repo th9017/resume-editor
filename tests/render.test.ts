@@ -47,7 +47,14 @@ describe('renderer', () => {
       resolveImage: () => 'javascript:void',
     })
     expect(unsafeHtml).not.toContain('src="javascript:')
-    expect(unsafeHtml).toContain('rv-img-invalid')
+    expect(unsafeHtml).toContain('rv-img-missing')
+
+    const missingHtml = renderResume(doc, {
+      template: getTemplate('classic'),
+      resolveImage: () => '',
+    })
+    expect(missingHtml).toContain('rv-img-missing')
+    expect(missingHtml).not.toContain('<img')
   })
 
   it('双栏模板把默认侧栏章节放到 side', () => {
