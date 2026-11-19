@@ -1,0 +1,92 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import BasicInfoForm from './BasicInfoForm.vue'
+import { activeSection, draft, editorState } from '../stores/editor'
+import { SECTION_META } from '../core/types'
+
+const title = computed(() => {
+  if (editorState.activeView === 'layout') return '布局'
+  if (editorState.activeView === 'basic') return '基本信息'
+  const section = activeSection.value
+  return section?.title || (section ? SECTION_META[section.type]?.label : '') || '章节'
+})
+
+const subtitle = computed(() => {
+  if (editorState.activeView === 'layout') return '调整章节顺序与双栏位置'
+  if (editorState.activeView === 'basic') return '简历抬头、头像与联系方式'
+  return '章节内容'
+})
+</script>
+
+<template>
+  <section class="form-pane">
+    <header class="form-head">
+      <div>
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
+      </div>
+    </header>
+    <div class="form-scroll">
+      <BasicInfoForm v-if="editorState.activeView === 'basic' && draft" />
+      <div v-else class="form-placeholder">
+        <div class="ph-mark">◌</div>
+        <p>{{ editorState.activeView === 'layout' ? '布局面板' : '章节表单' }}将在下一步接入</p>
+      </div>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.form-pane {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: var(--app-bg);
+}
+
+.form-head {
+  flex: none;
+  padding: 22px 22px 10px;
+}
+
+.form-head h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.form-head p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.form-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 6px 22px 28px;
+}
+
+.form-placeholder {
+  display: flex;
+  min-height: 240px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed #d8dcea;
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ph-mark {
+  color: var(--accent);
+  font-size: 28px;
+}
+</style>
