@@ -429,7 +429,7 @@ onBeforeUnmount(() => {
     <header class="toolbar">
       <div class="brand">
         简历编辑器
-        <span class="tag">T7 · PDF 导出</span>
+        <span class="tag">v0.1.0</span>
       </div>
       <div class="actions">
         <button class="btn" @click="handleNew">新建</button>
