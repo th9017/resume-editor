@@ -28,6 +28,7 @@ describe('settings', () => {
       autoSave: true,
       printTipsDismissed: false,
       theme: 'system',
+      directPdf: true,
     })
   })
 
@@ -39,6 +40,7 @@ describe('settings', () => {
         autoSave: 'no',
         printTipsDismissed: 1,
         theme: 'neon',
+        directPdf: 'yes',
       }),
     ).toEqual({
       version: 1,
@@ -46,12 +48,17 @@ describe('settings', () => {
       autoSave: true,
       printTipsDismissed: false,
       theme: 'system',
+      directPdf: true,
     })
   })
 
   it('保留合法的主题偏好', () => {
     expect(normalizeSettings({ theme: 'dark' }).theme).toBe('dark')
     expect(normalizeSettings({ theme: 'light' }).theme).toBe('light')
+  })
+
+  it('保留关闭直接导出的偏好', () => {
+    expect(normalizeSettings({ directPdf: false }).directPdf).toBe(false)
   })
 
   it('从旧 localStorage 迁移', () => {
@@ -66,6 +73,7 @@ describe('settings', () => {
       autoSave: false,
       printTipsDismissed: true,
       theme: 'system',
+      directPdf: true,
     })
   })
 

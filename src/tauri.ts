@@ -1,4 +1,4 @@
-import { convertFileSrc } from '@tauri-apps/api/core'
+import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { open, save } from '@tauri-apps/plugin-dialog'
 import {
   exists,
@@ -41,6 +41,20 @@ export async function pickImageFile(): Promise<string | null> {
     filters: [{ name: '图片', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }],
   })
   return typeof path === 'string' ? path : null
+}
+
+export async function pickPdfPath(defaultPath: string): Promise<string | null> {
+  const path = await save({
+    defaultPath,
+    title: '导出 PDF',
+    filters: [{ name: 'PDF', extensions: ['pdf'] }],
+  })
+  return typeof path === 'string' ? path : null
+}
+
+/** 用本机 Edge/Chrome 无头打印直接写 PDF；失败时抛错，由调用方回退系统打印 */
+export async function exportPdf(html: string, pdfPath: string): Promise<string> {
+  return await invoke<string>('print_html_to_pdf', { html, pdfPath })
 }
 
 export async function readTextFile(path: string): Promise<string> {

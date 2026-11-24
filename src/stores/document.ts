@@ -55,6 +55,7 @@ export const appState = reactive({
   autoSave: true,
   printTipsDismissed: false,
   theme: 'system' as ThemePreference,
+  directPdf: true,
   toast: null as ToastMessage | null,
 })
 
@@ -95,6 +96,7 @@ function settingsSnapshot(): AppSettings {
     autoSave: appState.autoSave,
     printTipsDismissed: appState.printTipsDismissed,
     theme: appState.theme,
+    directPdf: appState.directPdf,
   }
 }
 
@@ -127,6 +129,7 @@ export async function initSettings(): Promise<void> {
     appState.autoSave = settings.autoSave
     appState.printTipsDismissed = settings.printTipsDismissed
     appState.theme = settings.theme
+    appState.directPdf = settings.directPdf
   } catch {
     /* 设置读取失败时保持默认值 */
   }
@@ -140,6 +143,12 @@ export async function initSettings(): Promise<void> {
 export function setPrintTipsDismissed(): void {
   appState.printTipsDismissed = true
   persistSettings()
+}
+
+export function toggleDirectPdf(): void {
+  appState.directPdf = !appState.directPdf
+  persistSettings()
+  showToast(appState.directPdf ? '导出时直接生成 PDF 文件' : '导出时打开系统打印窗口')
 }
 
 export function showToast(text: string, kind: 'info' | 'error' = 'info'): void {

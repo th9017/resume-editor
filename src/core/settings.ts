@@ -10,10 +10,18 @@ export interface AppSettings {
   autoSave: boolean
   printTipsDismissed: boolean
   theme: ThemePreference
+  directPdf: boolean
 }
 
 export function defaultSettings(): AppSettings {
-  return { version: 1, recent: [], autoSave: true, printTipsDismissed: false, theme: 'system' }
+  return {
+    version: 1,
+    recent: [],
+    autoSave: true,
+    printTipsDismissed: false,
+    theme: 'system',
+    directPdf: true,
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -44,6 +52,7 @@ export function normalizeSettings(raw: unknown): AppSettings {
         ? raw.printTipsDismissed
         : defaults.printTipsDismissed,
     theme: isThemePreference(raw.theme) ? raw.theme : defaults.theme,
+    directPdf: typeof raw.directPdf === 'boolean' ? raw.directPdf : defaults.directPdf,
   }
 }
 

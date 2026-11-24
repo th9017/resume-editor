@@ -6,12 +6,12 @@ import {
   fileToDataUrl,
   resolveImagePath,
 } from './core/images'
-import { baseName, sanitizeFileName } from './core/paths'
+import { baseName, joinPath, parentDir, sanitizeFileName } from './core/paths'
 import { computeLayoutPlan, type LayoutPlan } from './core/measure'
 import { renderResume } from './core/render/renderer'
 import { getTemplate } from './core/render/templates'
 import { buildResumePrintHtml, printHtml } from './core/print'
-import { assetUrl, readBinaryFile } from './tauri'
+import { assetUrl, exportPdf, pickPdfPath, readBinaryFile } from './tauri'
 import {
   appState,
   bindCloseHandler,
@@ -27,6 +27,7 @@ import {
   setPrintTipsDismissed,
   setTheme,
   showToast,
+  toggleDirectPdf,
 } from './stores/document'
 import {
   canRedo,
@@ -258,7 +259,7 @@ function onKeydown(event: KeyboardEvent): void {
 }
 
 function handleExport(): void {
-  if (appState.printTipsDismissed) {
+  if (appState.directPdf || appState.printTipsDismissed) {
     void runPrint()
     return
   }
@@ -269,6 +270,23 @@ function onPrintTipsConfirm(dontShow: boolean): void {
   if (dontShow) setPrintTipsDismissed()
   printTipsOpen.value = false
   void runPrint()
+}
+
+/** 直接写 PDF；返回 fallback 时才需要打开系统打印窗口 */
+async function tryExportPdf(html: string, name: string): Promise<'done' | 'cancelled' | 'fallback'> {
+  const base = sanitizeFileName(name || '我的简历')
+  const suggested = docState.path ? joinPath(parentDir(docState.path), `${base}.pdf`) : `${base}.pdf`
+  const target = await pickPdfPath(suggested)
+  if (!target) return 'cancelled'
+  const pdfPath = /\.pdf$/i.test(target) ? target : `${target}.pdf`
+  try {
+    await exportPdf(html, pdfPath)
+    showToast(`已导出 ${pdfPath}`)
+    return 'done'
+  } catch (error) {
+    showToast(`无法直接导出：${messageOf(error)}，改用系统打印`, 'error')
+    return 'fallback'
+  }
 }
 
 async function runPrint(): Promise<void> {
@@ -296,13 +314,18 @@ async function runPrint(): Promise<void> {
       fit: plan.fit,
       stacked: plan.stacked,
     })
+    if (appState.directPdf && (await tryExportPdf(printDocument, name)) !== 'fallback') return
     await printHtml(printDocument)
     showToast(`已调起打印预览（约 ${plan.pageCount} 页），请另存为 PDF`)
   } catch (error) {
-    showToast(`导出失败：${error instanceof Error ? error.message : String(error)}`, 'error')
+    showToast(`导出失败：${messageOf(error)}`, 'error')
   } finally {
     printing.value = false
   }
+}
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }
 
 onMounted(() => {
@@ -336,6 +359,7 @@ onBeforeUnmount(() => {
       :printing="printing"
       :recent="appState.recent"
       :auto-save="appState.autoSave"
+      :direct-pdf="appState.directPdf"
       :can-undo="canUndo"
       :can-redo="canRedo"
       :theme="appState.theme"
@@ -348,6 +372,7 @@ onBeforeUnmount(() => {
       @recent="handleOpen"
       @source="handleSourcePlaceholder"
       @toggle-auto-save="toggleAutoSave"
+      @toggle-direct-pdf="toggleDirectPdf"
       @undo="handleUndo"
       @redo="handleRedo"
       @set-theme="setTheme"

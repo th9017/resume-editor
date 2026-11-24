@@ -22,6 +22,7 @@ defineProps<{
   printing: boolean
   recent: RecentFile[]
   autoSave: boolean
+  directPdf: boolean
   canUndo: boolean
   canRedo: boolean
   theme: ThemePreference
@@ -37,6 +38,7 @@ const emit = defineEmits<{
   (event: 'recent', path: string): void
   (event: 'source'): void
   (event: 'toggleAutoSave'): void
+  (event: 'toggleDirectPdf'): void
   (event: 'undo'): void
   (event: 'redo'): void
   (event: 'setTheme', theme: ThemePreference): void
@@ -127,6 +129,10 @@ function openRecent(path: string): void {
           <label class="auto-save">
             <input type="checkbox" :checked="autoSave" @change="emit('toggleAutoSave')" />
             <span>自动保存</span>
+          </label>
+          <label class="auto-save">
+            <input type="checkbox" :checked="directPdf" @change="emit('toggleDirectPdf')" />
+            <span>直接导出 PDF</span>
           </label>
           <div class="menu-sep"></div>
           <div class="recent-title">外观</div>
