@@ -41,6 +41,7 @@ import {
   editorState,
   enterSourceMode,
   flushDraft,
+  lintIssues,
   loadFromContent,
   redoFormEdit,
   requestSourceSwitch,
@@ -400,6 +401,7 @@ onBeforeUnmount(() => {
         <SectionRail
           :sections="sections"
           :active="editorState.activeView"
+          :lint-count="lintIssues.length"
           @select="selectView"
           @add="handleAddSectionPlaceholder"
           @template="openTemplate"

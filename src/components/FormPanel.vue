@@ -2,13 +2,21 @@
 import { computed } from 'vue'
 import BasicInfoForm from './BasicInfoForm.vue'
 import LayoutPanel from './LayoutPanel.vue'
+import LintPanel from './LintPanel.vue'
 import SectionForm from './SectionForm.vue'
-import { activeSection, draft, editorState, formDiagnostics } from '../stores/editor'
+import {
+  activeSection,
+  draft,
+  editorState,
+  formDiagnostics,
+  lintIssues,
+} from '../stores/editor'
 import { SECTION_META } from '../core/types'
 
 const title = computed(() => {
   if (editorState.activeView === 'layout') return '布局'
   if (editorState.activeView === 'basic') return '基本信息'
+  if (editorState.activeView === 'lint') return '简历质检'
   const section = activeSection.value
   return section?.title || (section ? SECTION_META[section.type]?.label : '') || '章节'
 })
@@ -16,8 +24,18 @@ const title = computed(() => {
 const subtitle = computed(() => {
   if (editorState.activeView === 'layout') return '调整章节顺序与双栏位置'
   if (editorState.activeView === 'basic') return '简历抬头、头像与联系方式'
+  if (editorState.activeView === 'lint') return '本地规则检查，不联网、不改动内容'
   return '章节内容'
 })
+
+function locate(sectionIndex: number): void {
+  if (sectionIndex < 0) {
+    editorState.activeView = 'basic'
+    return
+  }
+  const section = draft.value?.sections[sectionIndex]
+  if (section) editorState.activeView = section.id
+}
 </script>
 
 <template>
@@ -33,6 +51,7 @@ const subtitle = computed(() => {
         当前文档有 {{ formDiagnostics.length }} 条表单不完全支持的内容；保存时可能被重排或忽略。
       </div>
       <LayoutPanel v-if="editorState.activeView === 'layout'" />
+      <LintPanel v-else-if="editorState.activeView === 'lint'" :issues="lintIssues" @select="locate" />
       <BasicInfoForm v-else-if="editorState.activeView === 'basic' && draft" />
       <SectionForm v-else-if="activeSection" :section="activeSection" />
       <div v-else class="form-placeholder">

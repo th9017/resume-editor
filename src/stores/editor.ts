@@ -25,6 +25,7 @@ import {
   removeDraftItem,
   removeDraftSection,
 } from '../core/draftActions'
+import { lintResume, type LintIssue } from '../core/lint'
 import type { Diagnostic, ResumeDoc } from '../core/types'
 
 export type EditorMode = 'form' | 'source'
@@ -55,10 +56,13 @@ export const currentDoc: ComputedRef<ResumeDoc> = computed(() => {
 
 export const sourceDiagnostics = computed(() => parsedContent.value.diagnostics)
 
+export const lintIssues: ComputedRef<LintIssue[]> = computed(() => lintResume(currentDoc.value))
+
 export const activeSection = computed<DraftSection | null>(() => {
   if (!draft.value) return null
-  if (editorState.activeView === 'layout' || editorState.activeView === 'basic') return null
-  return draft.value.sections.find((section) => section.id === editorState.activeView) ?? null
+  const view = editorState.activeView
+  if (view === 'layout' || view === 'basic' || view === 'lint') return null
+  return draft.value.sections.find((section) => section.id === view) ?? null
 })
 
 let serializeTimer: ReturnType<typeof setTimeout> | null = null
@@ -86,7 +90,7 @@ function keepHistory(label: string, coalesce: boolean): void {
 
 function ensureActiveView(): void {
   const view = editorState.activeView
-  if (view === 'layout' || view === 'basic') return
+  if (view === 'layout' || view === 'basic' || view === 'lint') return
   if (draft.value?.sections.some((section) => section.id === view)) return
   editorState.activeView = draft.value?.sections.length ? 'layout' : 'basic'
 }

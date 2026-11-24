@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { LayoutGrid, Palette, Plus, User } from 'lucide-vue-next'
+import { LayoutGrid, ListChecks, Palette, Plus, User } from 'lucide-vue-next'
 import type { DraftSection } from '../core/draft'
 import { SECTION_META } from '../core/types'
 import { sectionIcon } from './sectionIcons'
@@ -8,6 +8,7 @@ import { sectionIcon } from './sectionIcons'
 const props = defineProps<{
   sections: DraftSection[]
   active: string
+  lintCount: number
 }>()
 
 const emit = defineEmits<{
@@ -17,13 +18,15 @@ const emit = defineEmits<{
 }>()
 
 const items = computed(() => [
-  { id: 'layout', label: '布局', icon: LayoutGrid },
-  { id: 'basic', label: '基本信息', icon: User },
+  { id: 'layout', label: '布局', icon: LayoutGrid, badge: 0 },
+  { id: 'basic', label: '基本信息', icon: User, badge: 0 },
   ...props.sections.map((section) => ({
     id: section.id,
     label: section.title || SECTION_META[section.type]?.label || '自定义章节',
     icon: sectionIcon(section.type),
+    badge: 0,
   })),
+  { id: 'lint', label: '简历质检', icon: ListChecks, badge: props.lintCount },
 ])
 </script>
 
@@ -40,6 +43,7 @@ const items = computed(() => [
     >
       <component :is="item.icon" :size="17" class="rail-icon" />
       <span class="rail-label">{{ item.label }}</span>
+      <span v-if="item.badge" class="rail-badge">{{ item.badge }}</span>
     </button>
 
     <div class="rail-spacer"></div>
@@ -98,6 +102,16 @@ const items = computed(() => [
 .rail-item.active {
   background: var(--accent-soft);
   color: var(--accent);
+  font-weight: 600;
+}
+
+.rail-badge {
+  margin-left: auto;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: var(--warn-soft);
+  color: var(--warn-text);
+  font-size: 10px;
   font-weight: 600;
 }
 
