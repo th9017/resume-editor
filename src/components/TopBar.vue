@@ -8,6 +8,7 @@ import {
   FolderOpen,
   LayoutTemplate,
   MoreHorizontal,
+  PanelRight,
   Redo2,
   Save,
   SaveAll,
@@ -27,6 +28,7 @@ defineProps<{
   canUndo: boolean
   canRedo: boolean
   theme: ThemePreference
+  previewOpen: boolean
 }>()
 
 const emit = defineEmits<{
@@ -44,6 +46,7 @@ const emit = defineEmits<{
   (event: 'undo'): void
   (event: 'redo'): void
   (event: 'setTheme', theme: ThemePreference): void
+  (event: 'togglePreview'): void
 }>()
 
 const more = ref<HTMLDetailsElement>()
@@ -112,6 +115,10 @@ function openRecent(path: string): void {
         <span>{{ printing ? '准备中…' : '导出 PDF' }}</span>
       </button>
 
+      <button class="tb-btn preview-toggle" :class="{ active: previewOpen }" title="A4 预览" @click="emit('togglePreview')">
+        <PanelRight :size="16" />
+        <span>预览</span>
+      </button>
       <details ref="more" class="more">
         <summary class="tb-btn icon-only" aria-label="更多">
           <MoreHorizontal :size="18" />
@@ -352,6 +359,16 @@ function openRecent(path: string): void {
   padding: 2px 4px 6px;
 }
 
+.preview-toggle {
+  display: none;
+}
+
+.preview-toggle.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .theme-row button {
   flex: 1;
   height: 26px;
@@ -410,6 +427,12 @@ function openRecent(path: string): void {
   padding: 6px 10px 8px;
   color: var(--muted);
   font-size: 11px;
+}
+
+@media (max-width: 900px) {
+  .preview-toggle {
+    display: inline-flex;
+  }
 }
 
 @media (max-width: 1100px) {

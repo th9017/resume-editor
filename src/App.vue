@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { X } from 'lucide-vue-next'
 import {
   buildImageMap,
   collectImageRefs,
@@ -60,6 +61,7 @@ import Toast from './components/Toast.vue'
 const printing = ref(false)
 const printTipsOpen = ref(false)
 const drawerOpen = ref(false)
+const previewOpen = ref(false)
 const layout = ref<LayoutPlan>({ fit: 1, stacked: false, pageCount: 1 })
 const imageVersion = ref(0)
 let layoutJob = 0
@@ -375,6 +377,7 @@ onBeforeUnmount(() => {
       :can-undo="canUndo"
       :can-redo="canRedo"
       :theme="appState.theme"
+      :preview-open="previewOpen"
       @new="handleNew"
       @open="handleOpen()"
       @save="handleSave"
@@ -389,9 +392,10 @@ onBeforeUnmount(() => {
       @undo="handleUndo"
       @redo="handleRedo"
       @set-theme="setTheme"
+      @toggle-preview="previewOpen = !previewOpen"
     />
 
-    <div class="workspace">
+    <div class="workspace" :class="{ 'preview-open': previewOpen }">
       <template v-if="editorState.mode === 'form'">
         <SectionRail
           :sections="sections"
@@ -410,6 +414,9 @@ onBeforeUnmount(() => {
           <span class="preview-meta">
             {{ currentTemplate.name }} · {{ pageLabel }}
           </span>
+          <button class="preview-close" title="关闭预览" @click="previewOpen = false">
+            <X :size="15" />
+          </button>
         </header>
         <div v-if="layoutWarning" class="layout-note">{{ layoutWarning }}</div>
         <PreviewPane :html="html" :page-count="layout.pageCount" />
