@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { ArrowDown, ArrowUp, GripVertical, Plus, Trash2 } from 'lucide-vue-next'
+import { insertPosition, moveTarget } from '../core/dragSort'
 import type { DraftSection } from '../core/draft'
 import { SECTION_META } from '../core/types'
 import { askConfirm } from '../stores/document'
@@ -8,9 +10,13 @@ import {
   editorState,
   moveSection,
   removeSection,
+  reorderSections,
   structuralEdit,
 } from '../stores/editor'
 import { sectionIcon } from './sectionIcons'
+
+const dragging = ref(-1)
+const dropAt = ref(-1)
 
 function labelFor(section: DraftSection): string {
   return section.title || SECTION_META[section.type]?.label || '自定义章节'
@@ -41,6 +47,36 @@ async function remove(section: DraftSection): Promise<void> {
 function openAddMenu(): void {
   editorState.addMenuOpen = true
 }
+
+function onDragStart(index: number, event: DragEvent): void {
+  dragging.value = index
+  dropAt.value = index
+  if (!event.dataTransfer) return
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('text/plain', String(index))
+  const row = event.currentTarget instanceof HTMLElement ? event.currentTarget.parentElement : null
+  if (row) event.dataTransfer.setDragImage(row, 20, 16)
+}
+
+function onDragOver(index: number, event: DragEvent): void {
+  if (dragging.value < 0) return
+  event.preventDefault()
+  const row = event.currentTarget as HTMLElement
+  const rect = row.getBoundingClientRect()
+  dropAt.value = insertPosition(event.clientY, rect.top, rect.height, index)
+}
+
+function onDrop(event: DragEvent): void {
+  event.preventDefault()
+  const to = moveTarget(dragging.value, dropAt.value, (draft.value?.sections.length ?? 0))
+  if (to !== null) reorderSections(dragging.value, to)
+  resetDrag()
+}
+
+function resetDrag(): void {
+  dragging.value = -1
+  dropAt.value = -1
+}
 </script>
 
 <template>
@@ -54,7 +90,23 @@ function openAddMenu(): void {
         v-for="(section, index) in draft.sections"
         :key="section.id"
         class="section-row"
+        :class="{
+          dragging: dragging === index,
+          'drop-top': dragging >= 0 && dropAt === index && dropAt !== dragging,
+          'drop-bottom': dragging >= 0 && dropAt === draft.sections.length && index === draft.sections.length - 1,
+        }"
+        @dragover="onDragOver(index, $event)"
+        @drop="onDrop"
       >
+        <span
+          class="grip"
+          draggable="true"
+          title="拖动排序"
+          @dragstart="onDragStart(index, $event)"
+          @dragend="resetDrag"
+        >
+          <GripVertical :size="14" />
+        </span>
         <component :is="sectionIcon(section.type)" :size="16" class="section-icon" />
         <button class="section-title" :title="labelFor(section)" @click="select(section)">
           {{ labelFor(section) }}
@@ -127,6 +179,34 @@ function openAddMenu(): void {
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--panel);
+}
+
+.section-row.dragging {
+  opacity: 0.45;
+}
+
+.section-row.drop-top {
+  box-shadow: 0 -3px 0 -1px var(--accent);
+}
+
+.section-row.drop-bottom {
+  box-shadow: 0 3px 0 -1px var(--accent);
+}
+
+.grip {
+  display: flex;
+  flex: none;
+  align-items: center;
+  color: var(--muted);
+  cursor: grab;
+}
+
+.grip:hover {
+  color: var(--accent);
+}
+
+.grip:active {
+  cursor: grabbing;
 }
 
 .section-icon {

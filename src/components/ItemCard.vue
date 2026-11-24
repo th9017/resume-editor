@@ -5,6 +5,7 @@ import {
   ArrowUp,
   ChevronDown,
   ChevronUp,
+  GripVertical,
   Trash2,
 } from 'lucide-vue-next'
 import {
@@ -12,10 +13,13 @@ import {
   type DraftItem,
   type DraftSection,
 } from '../core/draft'
+import { insertPosition, moveTarget } from '../core/dragSort'
 import { FIELD_LABELS } from '../core/types'
 import { askConfirm } from '../stores/document'
-import { moveItem, removeItem, touchDraft } from '../stores/editor'
+import { moveItem, removeItem, reorderItems, touchDraft } from '../stores/editor'
 import BulletListEditor from './BulletListEditor.vue'
+
+const DRAG_TYPE = 'application/x-resume-item'
 
 const props = defineProps<{
   section: DraftSection
@@ -82,11 +86,70 @@ async function remove(): Promise<void> {
   })
   if (ok) removeItem(props.section.id, props.item.id)
 }
+
+const dragging = ref(false)
+const dropAt = ref(-1)
+
+function positionOf(event: DragEvent): number {
+  const card = event.currentTarget as HTMLElement
+  const rect = card.getBoundingClientRect()
+  return insertPosition(event.clientY, rect.top, rect.height, props.index)
+}
+
+function onDragStart(event: DragEvent): void {
+  dragging.value = true
+  const data = event.dataTransfer
+  if (!data) return
+  data.effectAllowed = 'move'
+  data.setData(DRAG_TYPE, String(props.index))
+  const card = event.currentTarget instanceof HTMLElement ? event.currentTarget.closest('.item-card') : null
+  if (card) data.setDragImage(card, 24, 18)
+}
+
+function onDragOver(event: DragEvent): void {
+  if (!event.dataTransfer?.types.includes(DRAG_TYPE)) return
+  event.preventDefault()
+  dropAt.value = positionOf(event)
+}
+
+function onDrop(event: DragEvent): void {
+  const raw = event.dataTransfer?.getData(DRAG_TYPE)
+  dropAt.value = -1
+  if (raw === undefined || raw === '') return
+  event.preventDefault()
+  const from = Number(raw)
+  const to = moveTarget(from, positionOf(event), props.section.items.length)
+  if (to !== null) reorderItems(props.section.id, from, to)
+}
+
+function endDrag(): void {
+  dragging.value = false
+  dropAt.value = -1
+}
 </script>
 
 <template>
-  <article class="item-card" :class="{ collapsed: !open }">
+  <article
+    class="item-card"
+    :class="{
+      collapsed: !open,
+      dragging,
+      'drop-top': dropAt === index,
+      'drop-bottom': dropAt === index + 1,
+    }"
+    @dragover="onDragOver"
+    @drop="onDrop"
+  >
     <header class="item-head">
+      <span
+        class="grip"
+        draggable="true"
+        title="拖动排序"
+        @dragstart="onDragStart"
+        @dragend="endDrag"
+      >
+        <GripVertical :size="14" />
+      </span>
       <button class="chevron" :title="open ? '收起' : '展开'" @click="open = !open">
         <ChevronUp v-if="open" :size="15" />
         <ChevronDown v-else :size="15" />
@@ -147,6 +210,34 @@ async function remove(): Promise<void> {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--panel);
+}
+
+.item-card.dragging {
+  opacity: 0.45;
+}
+
+.item-card.drop-top {
+  box-shadow: 0 -3px 0 -1px var(--accent);
+}
+
+.item-card.drop-bottom {
+  box-shadow: 0 3px 0 -1px var(--accent);
+}
+
+.grip {
+  display: flex;
+  flex: none;
+  align-items: center;
+  color: var(--muted);
+  cursor: grab;
+}
+
+.grip:hover {
+  color: var(--accent);
+}
+
+.grip:active {
+  cursor: grabbing;
 }
 
 .item-head {
