@@ -1,11 +1,13 @@
-export type TemplateId = 'classic' | 'sidebar' | 'compact'
+export type TemplateId = 'classic' | 'sidebar' | 'compact' | 'timeline' | 'minimal'
 export type Spacing = 'compact' | 'normal' | 'relaxed'
+export type FontId = 'sans' | 'serif'
 export type Placement = 'auto' | 'main' | 'side'
 export type Severity = 'error' | 'warn' | 'info'
 
 export interface DocStyle {
   template: TemplateId
   accent: string
+  font: FontId
   fontSize: number
   spacing: Spacing
   autoFit: boolean
@@ -66,9 +68,31 @@ export interface ResumeDoc {
   frontmatter: FmInfo | null
 }
 
+export const TEMPLATE_IDS: TemplateId[] = [
+  'classic',
+  'sidebar',
+  'compact',
+  'timeline',
+  'minimal',
+]
+
+export const FONT_IDS: FontId[] = ['sans', 'serif']
+
+/** 只用 Windows/WebView2 一定存在的字形，避免导出 PDF 时缺字体 */
+export const FONT_STACKS: Record<FontId, string> = {
+  sans: '"Segoe UI", "Microsoft YaHei", system-ui, sans-serif',
+  serif: '"Times New Roman", SimSun, "Songti SC", Georgia, serif',
+}
+
+export const FONT_LABELS: Record<FontId, string> = {
+  sans: '无衬线',
+  serif: '衬线',
+}
+
 export const DEFAULT_STYLE: DocStyle = {
   template: 'classic',
   accent: '#2563eb',
+  font: 'sans',
   fontSize: 10.5,
   spacing: 'normal',
   autoFit: true,

@@ -10,7 +10,7 @@
 - 拖拽排序：布局页的章节、章节内的条目都可拖动手柄排序，上移/下移按钮保留
 - 表单撤销/重做：误删章节、条目、要点后可逐步回退
 - 布局页：调整章节顺序、删除章节、选择双栏模板中的主栏/侧栏位置
-- 3 套模板：经典单栏、双栏侧栏、紧凑型；模板抽屉支持主题色、字号、间距、自动一页
+- 5 套模板：经典单栏、双栏侧栏、紧凑型、时间线、极简留白；模板抽屉支持主题色、字体、字号、间距、自动一页
 - 深色模式：应用外壳跟随系统或手动切换，简历纸张始终白纸黑字
 - 源码模式：直接编辑 Markdown，带诊断跳转；返回表单时提示不支持内容
 - 单文档打开/保存/另存为、最近文件、800ms 自动保存、关闭前确认
@@ -89,8 +89,9 @@ contact:
   github: github.com/example
 avatar: assets/avatar.jpg
 style:
-  template: classic        # classic | sidebar | compact
+  template: classic        # classic | sidebar | compact | timeline | minimal
   accent: "#2563eb"
+  font: sans               # sans | serif
   font_size: 10.5          # pt，8.5–12
   spacing: normal          # compact | normal | relaxed
   auto_fit: true

@@ -179,6 +179,7 @@ Hi
     expect(doc.style).toEqual({
       template: 'sidebar',
       accent: '#aabbcc',
+      font: 'sans',
       fontSize: 12,
       spacing: 'compact',
       autoFit: false,

@@ -50,12 +50,25 @@ body`
     expect(read.style).toEqual({
       template: 'sidebar',
       accent: '#aabbcc',
+      font: 'sans',
       fontSize: 9.5,
       spacing: 'compact',
       autoFit: false,
     })
     expect(read.body).toBe('body')
     expect(read.bodyStartLine).toBe(15)
+  })
+
+  it('读取字体并保留衬线设置', () => {
+    const read = readFrontmatter('---\nstyle:\n  font: serif\n---\nbody')
+    expect(read.style.font).toBe('serif')
+    expect(patchStyle(':::: summary\n## 简介\nHi\n::::', { font: 'serif' })).toContain('  font: serif')
+  })
+
+  it('未知字体回退为 sans', () => {
+    const read = readFrontmatter('---\nstyle:\n  font: comic\n---\nbody')
+    expect(read.style.font).toBe('sans')
+    expect(read.diagnostics.map((item) => item.code)).toContain('STYLE_FONT')
   })
 
   it('非法样式值回退并给出警告', () => {

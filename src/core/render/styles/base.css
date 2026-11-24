@@ -1,6 +1,7 @@
 .rv {
   --rv-accent: #2563eb;
   --rv-accent-soft: #eff4ff;
+  --rv-font: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
   --rv-base: 10.5pt;
   --rv-fit: 1;
   --rv-lh: 1.55;
@@ -9,7 +10,7 @@
   --rv-side-w: 60mm;
   --rv-gap: 6mm;
   color: #1f2937;
-  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  font-family: var(--rv-font);
   font-size: calc(var(--rv-base) * var(--rv-fit));
   line-height: var(--rv-lh);
   overflow-wrap: anywhere;

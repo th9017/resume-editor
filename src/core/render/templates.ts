@@ -1,7 +1,9 @@
 import baseCss from './styles/base.css?raw'
 import classicCss from './styles/classic.css?raw'
 import compactCss from './styles/compact.css?raw'
+import minimalCss from './styles/minimal.css?raw'
 import sidebarCss from './styles/sidebar.css?raw'
+import timelineCss from './styles/timeline.css?raw'
 import type { TemplateId } from '../types'
 
 export interface TemplateDef {
@@ -33,6 +35,20 @@ export const TEMPLATE_LIST: TemplateDef[] = [
     twoColumn: false,
     defaultSide: new Set<string>(),
     css: [baseCss, compactCss].join('\n'),
+  },
+  {
+    id: 'timeline',
+    name: '时间线',
+    twoColumn: false,
+    defaultSide: new Set<string>(),
+    css: [baseCss, timelineCss].join('\n'),
+  },
+  {
+    id: 'minimal',
+    name: '极简留白',
+    twoColumn: false,
+    defaultSide: new Set<string>(),
+    css: [baseCss, minimalCss].join('\n'),
   },
 ]
 

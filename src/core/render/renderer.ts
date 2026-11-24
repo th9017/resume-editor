@@ -1,5 +1,5 @@
 import MarkdownIt from 'markdown-it'
-import { FIELD_LABELS } from '../types'
+import { FIELD_LABELS, FONT_STACKS } from '../types'
 import type { DocStyle, ResumeDoc, ResumeItem, ResumeSection } from '../types'
 import { escapeHtml, isSafeImageSrc, isSafeLink } from './escape'
 import type { TemplateDef } from './templates'
@@ -109,7 +109,7 @@ export function renderResume(doc: ResumeDoc, context: RenderContext): string {
     .map((section) => section.html)
     .join('')
   const all = sections.map((section) => section.html).join('')
-  const attribute = `class="${classes.join(' ')}" style="${styleVars(doc.style, fit)}"`
+  const attribute = `class="${classes.join(' ')}" style="${escapeHtml(styleVars(doc.style, fit))}"`
 
   if (template.twoColumn && !stacked) {
     return `<article ${attribute}><div class="rv-grid"><aside class="rv-side">${identity}${side}</aside><main class="rv-main">${preamble}${main}</main></div></article>`
@@ -122,9 +122,11 @@ export function styleVars(style: DocStyle, fit = 1): string {
   const accent = /^#[0-9a-f]{6}$/i.test(style.accent) ? style.accent : '#2563eb'
   const base = Math.min(12, Math.max(8.5, Number.isFinite(style.fontSize) ? style.fontSize : 10.5))
   const fitValue = Math.min(1, Math.max(0.8, Number.isFinite(fit) ? fit : 1))
+  const font = FONT_STACKS[style.font] ?? FONT_STACKS.sans
   return [
     `--rv-accent: ${accent}`,
     `--rv-accent-soft: ${softColor(accent)}`,
+    `--rv-font: ${font}`,
     `--rv-base: ${base}pt`,
     `--rv-fit: ${Math.round(fitValue * 1000) / 1000}`,
   ].join('; ') + ';'

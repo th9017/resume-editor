@@ -252,6 +252,7 @@ export function serializeDraft(draft: ResumeDraft): string {
   fm.style = {
     template: draft.style.template,
     accent: draft.style.accent,
+    font: draft.style.font,
     font_size: draft.style.fontSize,
     spacing: draft.style.spacing,
     auto_fit: draft.style.autoFit,

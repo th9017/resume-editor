@@ -3,9 +3,10 @@ import { parseResume } from '../src/core/parser'
 import { escapeHtml, isSafeImageSrc, isSafeLink } from '../src/core/render/escape'
 import { renderResume } from '../src/core/render/renderer'
 import { getTemplate } from '../src/core/render/templates'
+import { TEMPLATE_IDS, type TemplateId } from '../src/core/types'
 import { SHOWCASE_MARKDOWN } from '../src/samples/showcase'
 
-function render(source: string, templateId: 'classic' | 'sidebar' | 'compact' = 'classic'): string {
+function render(source: string, templateId: TemplateId = 'classic'): string {
   const doc = parseResume(source)
   return renderResume(doc, { template: getTemplate(templateId) })
 }
@@ -138,6 +139,46 @@ describe('renderer', () => {
     expect(html).toContain('--rv-base: 9pt')
     expect(html).toContain('--rv-fit: 0.9')
     expect(html).toContain('--rv-accent-soft:')
+    expect(html).toContain('--rv-font: &quot;Segoe UI&quot;')
+  })
+
+  it('衬线字体使用 Windows 一定存在的字体栈', () => {
+    const doc = parseResume('---\nstyle:\n  font: serif\n---\n:::: summary\n## 简介\nHi\n::::')
+    const html = renderResume(doc, { template: getTemplate('classic') })
+    expect(html).toContain('--rv-font: &quot;Times New Roman&quot;, SimSun')
+  })
+
+  it('非法字体回退为无衬线栈', () => {
+    const doc = parseResume('---\nstyle:\n  font: comic\n---\n:::: summary\n## 简介\nHi\n::::')
+    const html = renderResume(doc, { template: getTemplate('classic') })
+    expect(html).toContain('--rv-font: &quot;Segoe UI&quot;')
+  })
+
+  it('字体栈中的引号不会截断 style 属性', () => {
+    const doc = parseResume('---\nstyle:\n  font: serif\n---\n:::: summary\n## 简介\nHi\n::::')
+    const html = renderResume(doc, { template: getTemplate('classic') })
+    const attribute = /style="([^"]*)"/.exec(html)?.[1] ?? ''
+    expect(attribute).toContain('--rv-font: &quot;Times New Roman&quot;, SimSun')
+    expect(attribute).toContain('--rv-base: 10.5pt')
+    expect(attribute).toContain('--rv-fit: 1')
+  })
+
+  it('时间线与极简模板套用各自的类名', () => {
+    const doc = parseResume(
+      ':::: experience\n## 工作经历\n\n::: item\ncompany: 甲\nperiod: 2020 — 至今\n---\n- 做了一件事\n:::\n::::',
+    )
+    for (const id of ['timeline', 'minimal'] as const) {
+      const template = getTemplate(id)
+      const html = renderResume(doc, { template })
+      expect(html).toContain(`rv--${id}`)
+      expect(html).toContain('rv-item')
+      expect(template.twoColumn).toBe(false)
+    }
+  })
+
+  it('模板注册表与 frontmatter 白名单一致', async () => {
+    const { TEMPLATE_LIST } = await import('../src/core/render/templates')
+    expect(TEMPLATE_LIST.map((template) => template.id)).toEqual([...TEMPLATE_IDS])
   })
 })
 

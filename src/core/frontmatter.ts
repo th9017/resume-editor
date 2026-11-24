@@ -3,17 +3,21 @@ import {
   CONTACT_LABELS,
   CONTACT_ORDER,
   DEFAULT_STYLE,
+  FONT_IDS,
+  TEMPLATE_IDS,
   type ContactItem,
   type Diagnostic,
   type DocStyle,
   type FmInfo,
+  type FontId,
   type ResumeIdentity,
   type Severity,
   type Spacing,
   type TemplateId,
 } from './types'
 
-const TEMPLATES: TemplateId[] = ['classic', 'sidebar', 'compact']
+const TEMPLATES: TemplateId[] = TEMPLATE_IDS
+const FONTS: FontId[] = FONT_IDS
 const SPACINGS: Spacing[] = ['compact', 'normal', 'relaxed']
 const ACCENT_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
 
@@ -147,6 +151,15 @@ export function readStyle(
       result.accent = accent
     } else {
       diagAt(rawLines, diagnostics, 'accent', 'warn', 'STYLE_ACCENT', '主题色格式无效，已回退默认颜色')
+    }
+  }
+
+  const typeface = asText(pick(raw, 'font', 'font_family')).toLowerCase()
+  if (typeface) {
+    if (FONTS.includes(typeface as FontId)) {
+      result.font = typeface as FontId
+    } else {
+      diagAt(rawLines, diagnostics, 'font', 'warn', 'STYLE_FONT', '未知字体，已回退为 sans')
     }
   }
 
@@ -445,6 +458,7 @@ function styleBlock(style: DocStyle): string[] {
     'style:',
     `  template: ${style.template}`,
     `  accent: "${style.accent}"`,
+    `  font: ${style.font}`,
     `  font_size: ${style.fontSize}`,
     `  spacing: ${style.spacing}`,
     `  auto_fit: ${style.autoFit ? 'true' : 'false'}`,

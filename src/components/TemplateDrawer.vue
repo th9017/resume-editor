@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { X } from 'lucide-vue-next'
 import { TEMPLATE_LIST } from '../core/render/templates'
-import type { Spacing, TemplateId } from '../core/types'
+import { FONT_IDS, FONT_LABELS, type FontId, type Spacing, type TemplateId } from '../core/types'
 import { draft, structuralEdit, touchDraft } from '../stores/editor'
 
 defineProps<{ open: boolean }>()
@@ -10,6 +10,7 @@ const emit = defineEmits<{ (event: 'close'): void }>()
 
 const docStyle = computed(() => draft.value?.style ?? null)
 const accents = ['#2563eb', '#0f766e', '#7c3aed', '#b91c1c', '#c2410c', '#334155']
+const fonts = FONT_IDS.map((value) => ({ value, label: FONT_LABELS[value] }))
 const spacings: { value: Spacing; label: string }[] = [
   { value: 'compact', label: '紧凑' },
   { value: 'normal', label: '标准' },
@@ -39,6 +40,12 @@ function setSpacing(spacing: Spacing): void {
   if (!draft.value) return
   draft.value.style.spacing = spacing
   structuralEdit(`style:spacing:${spacing}`)
+}
+
+function setFont(font: FontId): void {
+  if (!draft.value) return
+  draft.value.style.font = font
+  structuralEdit(`style:font:${font}`)
 }
 
 function onAutoFit(event: Event): void {
@@ -126,6 +133,20 @@ function onAutoFit(event: Event): void {
               :value="docStyle.fontSize"
               @input="onFontSize"
             />
+          </section>
+
+          <section>
+            <h3>字体</h3>
+            <div class="segmented">
+              <button
+                v-for="item in fonts"
+                :key="item.value"
+                :class="{ active: docStyle.font === item.value }"
+                @click="setFont(item.value)"
+              >
+                {{ item.label }}
+              </button>
+            </div>
           </section>
 
           <section>
@@ -323,6 +344,62 @@ h3 em {
 .thumb-compact .t-line {
   height: 3px;
   margin-top: 4px;
+}
+
+.thumb-timeline::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  bottom: 12px;
+  left: 6px;
+  width: 1px;
+  background: var(--thumb-accent);
+  opacity: 0.35;
+}
+
+.thumb-timeline .t-head,
+.thumb-timeline .t-line {
+  margin-left: 12px;
+}
+
+.thumb-timeline .t-line {
+  position: relative;
+}
+
+.thumb-timeline .t-line::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -9px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--thumb-accent);
+}
+
+.thumb-minimal {
+  padding: 16px 14px;
+}
+
+.thumb-minimal .t-name {
+  width: 42%;
+  height: 7px;
+  margin: 0 auto;
+}
+
+.thumb-minimal .t-sub {
+  width: 28%;
+  margin: 5px auto 0;
+}
+
+.thumb-minimal .t-head {
+  margin-bottom: 14px;
+}
+
+.thumb-minimal .t-line {
+  height: 3px;
+  margin-top: 10px;
+  opacity: 0.6;
 }
 
 .swatches {
