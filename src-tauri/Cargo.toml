@@ -2,7 +2,7 @@
 name = "resume"
 version = "0.1.0"
 description = "本地 Markdown 简历编辑器"
-authors = ["jiang"]
+authors = ["ResumeEditor contributors"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

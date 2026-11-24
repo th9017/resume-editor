@@ -29,3 +29,5 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+# 内部计划与设计草稿，不随仓库发布
+docs/superpowers/

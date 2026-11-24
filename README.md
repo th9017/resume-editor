@@ -206,5 +206,6 @@ npm run build:portable
 
 ## 许可与致谢
 
+- 本项目采用 [MIT 许可证](LICENSE)。
 - 产品形态参考 [Magic Resume](https://github.com/JOYCEQL/magic-resume)，未使用其源代码（其许可含非商用限制）。
 - 文件/对话框封装与隐藏 iframe 打印思路源自 [MD-Editor](https://github.com/th9017/md-editor)（MIT）。详见 [NOTICE.md](NOTICE.md)。

@@ -142,8 +142,8 @@ mod tests {
 
     #[test]
     fn windows_path_becomes_file_url() {
-        let url = file_url(Path::new(r"C:\Users\jiang\AppData\Local\Temp\a b.html"));
-        assert_eq!(url, "file:///C:/Users/jiang/AppData/Local/Temp/a%20b.html");
+        let url = file_url(Path::new(r"C:\Users\demo\AppData\Local\Temp\a b.html"));
+        assert_eq!(url, "file:///C:/Users/demo/AppData/Local/Temp/a%20b.html");
     }
 
     #[test]
