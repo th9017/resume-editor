@@ -100,15 +100,15 @@ function moveBullet(index: number, delta: -1 | 1): void {
   border: 1px solid var(--border);
   border-radius: 7px;
   outline: none;
-  background: #fbfbfe;
+  background: var(--panel-soft);
   color: var(--text);
   font-size: 12px;
 }
 
 .bullet-row input:focus {
   border-color: var(--accent);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(109, 93, 252, 0.1);
+  background: var(--panel);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .icon-btn {
@@ -126,7 +126,7 @@ function moveBullet(index: number, delta: -1 | 1): void {
 }
 
 .icon-btn:hover {
-  background: #f1f2f8;
+  background: var(--sunken);
   color: var(--text);
 }
 
@@ -136,8 +136,8 @@ function moveBullet(index: number, delta: -1 | 1): void {
 }
 
 .icon-btn.danger:hover {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .add-bullet {

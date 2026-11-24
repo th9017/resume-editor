@@ -36,15 +36,15 @@ import {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(20, 23, 40, 0.3);
+  background: var(--overlay);
 }
 
 .modal {
   width: min(520px, calc(100vw - 40px));
   padding: 20px;
   border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 24px 64px rgba(20, 23, 40, 0.24);
+  background: var(--panel);
+  box-shadow: 0 24px 64px var(--shadow-color);
 }
 
 .head {
@@ -76,7 +76,7 @@ import {
   justify-content: center;
   border: 0;
   border-radius: 8px;
-  background: #f5f6fa;
+  background: var(--panel-tint);
   color: var(--muted);
   cursor: pointer;
 }
@@ -86,10 +86,10 @@ import {
   margin: 14px 0 0;
   padding: 10px;
   overflow: auto;
-  border: 1px solid #fde68a;
+  border: 1px solid var(--warn-border);
   border-radius: 8px;
-  background: #fffbeb;
-  color: #92400e;
+  background: var(--warn-soft);
+  color: var(--warn);
   font-family: Consolas, "Courier New", monospace;
   font-size: 11px;
   line-height: 1.6;
@@ -104,8 +104,8 @@ import {
 }
 
 .actions .danger {
-  border-color: #fca5a5;
-  background: #fef2f2;
-  color: #b91c1c;
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 </style>

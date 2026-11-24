@@ -81,10 +81,10 @@ const subtitle = computed(() => {
 .form-alert {
   margin-bottom: 10px;
   padding: 8px 10px;
-  border: 1px solid #fde68a;
+  border: 1px solid var(--warn-border);
   border-radius: 8px;
-  background: #fffbeb;
-  color: #92400e;
+  background: var(--warn-soft);
+  color: var(--warn);
   font-size: 11px;
   line-height: 1.5;
 }
@@ -96,9 +96,9 @@ const subtitle = computed(() => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px dashed #d8dcea;
+  border: 1px dashed var(--border-dashed);
   border-radius: 14px;
-  background: #ffffff;
+  background: var(--panel);
   color: var(--muted);
   font-size: 12px;
 }

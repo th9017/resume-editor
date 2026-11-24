@@ -63,7 +63,7 @@ const items = computed(() => [
   gap: 2px;
   padding: 16px 10px 12px;
   border-right: 1px solid var(--border);
-  background: #ffffff;
+  background: var(--panel);
   overflow-y: auto;
 }
 
@@ -84,14 +84,14 @@ const items = computed(() => [
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #5b6174;
+  color: var(--text-soft);
   font-size: 12px;
   text-align: left;
   cursor: pointer;
 }
 
 .rail-item:hover {
-  background: #f5f6fb;
+  background: var(--panel-tint);
   color: var(--text);
 }
 
@@ -128,9 +128,9 @@ const items = computed(() => [
   gap: 6px;
   margin-top: 6px;
   padding: 8px;
-  border: 1px dashed #cfd4e2;
+  border: 1px dashed var(--border-dashed);
   border-radius: 8px;
-  background: #fbfbff;
+  background: var(--panel-soft);
   color: var(--accent);
   font-size: 12px;
   cursor: pointer;

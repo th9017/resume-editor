@@ -53,34 +53,34 @@ function confirm(): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.38);
+  background: var(--overlay);
 }
 
 .modal {
   width: min(480px, calc(100vw - 40px));
   padding: 20px;
   border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.24);
+  background: var(--panel);
+  box-shadow: 0 24px 64px var(--shadow-color);
 }
 
 h3 {
   margin: 0 0 12px;
-  color: #0f172a;
+  color: var(--text-strong);
   font-size: 16px;
 }
 
 .tips {
   margin: 0;
   padding-left: 18px;
-  color: #334155;
+  color: var(--text-soft);
   font-size: 13px;
   line-height: 1.9;
 }
 
 .hint {
   margin: 10px 0 0;
-  color: #64748b;
+  color: var(--text-soft);
   font-size: 12px;
   line-height: 1.6;
 }
@@ -90,7 +90,7 @@ h3 {
   align-items: center;
   gap: 6px;
   margin-top: 14px;
-  color: #475569;
+  color: var(--text-soft);
   font-size: 12px;
   cursor: pointer;
 }

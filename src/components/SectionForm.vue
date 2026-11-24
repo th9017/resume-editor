@@ -113,12 +113,12 @@ function setBody(value: string): void {
   padding: 14px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--panel);
 }
 
 .card.soft {
   padding: 10px 14px;
-  background: #fbfbfe;
+  background: var(--panel-soft);
 }
 
 .field {
@@ -139,7 +139,7 @@ function setBody(value: string): void {
   border: 1px solid var(--border);
   border-radius: 8px;
   outline: none;
-  background: #fbfbfe;
+  background: var(--panel-soft);
   color: var(--text);
   font-size: 13px;
   font-weight: 600;
@@ -147,8 +147,8 @@ function setBody(value: string): void {
 
 .field input:focus {
   border-color: var(--accent);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(109, 93, 252, 0.1);
+  background: var(--panel);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .kind {
@@ -172,7 +172,7 @@ function setBody(value: string): void {
   border-radius: 8px;
   outline: none;
   resize: vertical;
-  background: #fbfbfe;
+  background: var(--panel-soft);
   color: var(--text);
   font-size: 12px;
   line-height: 1.7;
@@ -187,7 +187,7 @@ function setBody(value: string): void {
 
 .body-input:focus {
   border-color: var(--accent);
-  background: #ffffff;
+  background: var(--panel);
 }
 
 .hint {
@@ -217,9 +217,9 @@ function setBody(value: string): void {
 
 .empty-items {
   padding: 22px;
-  border: 1px dashed #d8dcea;
+  border: 1px dashed var(--border-dashed);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--panel);
   color: var(--muted);
   font-size: 11px;
   text-align: center;
@@ -227,9 +227,9 @@ function setBody(value: string): void {
 
 .add-item {
   height: 36px;
-  border: 1px dashed #cfd4e2;
+  border: 1px dashed var(--border-dashed);
   border-radius: 9px;
-  background: #fbfbff;
+  background: var(--panel-soft);
   color: var(--accent);
   font-size: 12px;
   cursor: pointer;

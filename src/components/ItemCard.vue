@@ -146,7 +146,7 @@ async function remove(): Promise<void> {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--panel);
 }
 
 .item-head {
@@ -154,7 +154,7 @@ async function remove(): Promise<void> {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  border-bottom: 1px solid #f1f2f7;
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .item-card.collapsed .item-head {
@@ -176,7 +176,7 @@ async function remove(): Promise<void> {
 }
 
 .chevron:hover {
-  background: #f4f5fa;
+  background: var(--panel-tint);
 }
 
 .item-summary {
@@ -225,7 +225,7 @@ async function remove(): Promise<void> {
 }
 
 .item-actions button:hover {
-  background: #f4f5fa;
+  background: var(--panel-tint);
   color: var(--text);
 }
 
@@ -235,8 +235,8 @@ async function remove(): Promise<void> {
 }
 
 .item-actions button.danger:hover {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .item-body {
@@ -271,15 +271,15 @@ async function remove(): Promise<void> {
   border: 1px solid var(--border);
   border-radius: 7px;
   outline: none;
-  background: #fbfbfe;
+  background: var(--panel-soft);
   color: var(--text);
   font-size: 12px;
 }
 
 .field input:focus {
   border-color: var(--accent);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(109, 93, 252, 0.1);
+  background: var(--panel);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .block-label {
@@ -312,7 +312,7 @@ async function remove(): Promise<void> {
   border-radius: 7px;
   outline: none;
   resize: vertical;
-  background: #fbfbfe;
+  background: var(--panel-soft);
   color: var(--text);
   font-family: Consolas, "Courier New", monospace;
   font-size: 11px;
@@ -321,6 +321,6 @@ async function remove(): Promise<void> {
 
 .note:focus {
   border-color: var(--accent);
-  background: #ffffff;
+  background: var(--panel);
 }
 </style>

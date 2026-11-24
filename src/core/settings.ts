@@ -2,16 +2,18 @@ import { appDataDir, join } from '@tauri-apps/api/path'
 import { invoke } from '@tauri-apps/api/core'
 import { exists, mkdir, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs'
 import { loadRecent, type RecentFile, type StorageLike } from './recent'
+import { isThemePreference, type ThemePreference } from './theme'
 
 export interface AppSettings {
   version: 1
   recent: RecentFile[]
   autoSave: boolean
   printTipsDismissed: boolean
+  theme: ThemePreference
 }
 
 export function defaultSettings(): AppSettings {
-  return { version: 1, recent: [], autoSave: true, printTipsDismissed: false }
+  return { version: 1, recent: [], autoSave: true, printTipsDismissed: false, theme: 'system' }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -41,6 +43,7 @@ export function normalizeSettings(raw: unknown): AppSettings {
       typeof raw.printTipsDismissed === 'boolean'
         ? raw.printTipsDismissed
         : defaults.printTipsDismissed,
+    theme: isThemePreference(raw.theme) ? raw.theme : defaults.theme,
   }
 }
 

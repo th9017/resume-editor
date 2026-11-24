@@ -59,15 +59,15 @@ function close(): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(20, 23, 40, 0.28);
+  background: var(--overlay);
 }
 
 .modal {
   width: min(500px, calc(100vw - 40px));
   padding: 18px;
   border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 24px 64px rgba(20, 23, 40, 0.24);
+  background: var(--panel);
+  box-shadow: 0 24px 64px var(--shadow-color);
 }
 
 .head {
@@ -97,7 +97,7 @@ function close(): void {
   justify-content: center;
   border: 0;
   border-radius: 8px;
-  background: #f5f6fa;
+  background: var(--panel-tint);
   color: var(--muted);
   cursor: pointer;
 }
@@ -115,7 +115,7 @@ function close(): void {
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--panel);
   color: var(--text);
   font-size: 12px;
   text-align: left;

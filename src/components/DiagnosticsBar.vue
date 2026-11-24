@@ -34,13 +34,13 @@ const items = computed(() => props.diagnostics.filter((item) => item.severity !=
   max-height: 88px;
   overflow: auto;
   padding: 6px 12px;
-  border-top: 1px solid #fde68a;
-  background: #fffbeb;
+  border-top: 1px solid var(--warn-border);
+  background: var(--warn-soft);
   font-size: 11px;
 }
 
 .label {
-  color: #b45309;
+  color: var(--warn-text);
   font-weight: 600;
 }
 
@@ -50,10 +50,10 @@ const items = computed(() => props.diagnostics.filter((item) => item.severity !=
   align-items: center;
   gap: 6px;
   padding: 2px 8px;
-  border: 1px solid #fcd34d;
+  border: 1px solid var(--warn-border-strong);
   border-radius: 999px;
-  background: #ffffff;
-  color: #92400e;
+  background: var(--panel);
+  color: var(--warn);
   font-size: 11px;
   cursor: pointer;
 }
@@ -63,9 +63,9 @@ const items = computed(() => props.diagnostics.filter((item) => item.severity !=
 }
 
 .diag.error {
-  border-color: #fca5a5;
-  background: #fef2f2;
-  color: #b91c1c;
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .line {

@@ -19,11 +19,11 @@ import { appState } from '../stores/document'
   max-width: 70vw;
   padding: 8px 16px;
   border-radius: 8px;
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--toast-bg);
+  color: var(--toast-fg);
   font-size: 12px;
   line-height: 1.5;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.24);
+  box-shadow: 0 8px 24px var(--shadow-color);
   transform: translateX(-50%);
 }
 

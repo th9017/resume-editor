@@ -192,7 +192,7 @@ function messageOf(error: unknown): string {
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: #ffffff;
+  background: var(--panel);
 }
 
 .avatar-card {
@@ -260,7 +260,7 @@ function messageOf(error: unknown): string {
 
 .ghost-btn {
   border: 1px solid var(--border);
-  background: #ffffff;
+  background: var(--panel);
   color: var(--muted);
 }
 
@@ -292,15 +292,15 @@ function messageOf(error: unknown): string {
   border: 1px solid var(--border);
   border-radius: 8px;
   outline: none;
-  background: #fbfbfe;
+  background: var(--panel-soft);
   color: var(--text);
   font-size: 12px;
 }
 
 .field input:focus {
   border-color: var(--accent);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(109, 93, 252, 0.1);
+  background: var(--panel);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .block-title {

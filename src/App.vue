@@ -25,6 +25,7 @@ import {
   saveDocumentAs,
   setBeforeCloseHook,
   setPrintTipsDismissed,
+  setTheme,
   showToast,
 } from './stores/document'
 import {
@@ -337,6 +338,7 @@ onBeforeUnmount(() => {
       :auto-save="appState.autoSave"
       :can-undo="canUndo"
       :can-redo="canRedo"
+      :theme="appState.theme"
       @new="handleNew"
       @open="handleOpen()"
       @save="handleSave"
@@ -348,6 +350,7 @@ onBeforeUnmount(() => {
       @toggle-auto-save="toggleAutoSave"
       @undo="handleUndo"
       @redo="handleRedo"
+      @set-theme="setTheme"
     />
 
     <div class="workspace">

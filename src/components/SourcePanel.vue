@@ -108,7 +108,7 @@ async function handlePasteImages(files: File[]): Promise<void> {
   gap: 16px;
   padding: 14px 18px;
   border-bottom: 1px solid var(--border);
-  background: #ffffff;
+  background: var(--panel);
 }
 
 .source-title {
@@ -139,7 +139,7 @@ async function handlePasteImages(files: File[]): Promise<void> {
   padding: 0 11px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--panel);
   color: var(--text);
   font-size: 12px;
   cursor: pointer;
@@ -155,6 +155,6 @@ async function handlePasteImages(files: File[]): Promise<void> {
   flex: 1;
   min-height: 0;
   flex-direction: column;
-  background: #fbfcfe;
+  background: var(--panel-soft);
 }
 </style>

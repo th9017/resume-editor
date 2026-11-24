@@ -27,6 +27,7 @@ describe('settings', () => {
       recent: [],
       autoSave: true,
       printTipsDismissed: false,
+      theme: 'system',
     })
   })
 
@@ -37,13 +38,20 @@ describe('settings', () => {
         recent: [a, { path: 1 }, b],
         autoSave: 'no',
         printTipsDismissed: 1,
+        theme: 'neon',
       }),
     ).toEqual({
       version: 1,
       recent: [a, b],
       autoSave: true,
       printTipsDismissed: false,
+      theme: 'system',
     })
+  })
+
+  it('保留合法的主题偏好', () => {
+    expect(normalizeSettings({ theme: 'dark' }).theme).toBe('dark')
+    expect(normalizeSettings({ theme: 'light' }).theme).toBe('light')
   })
 
   it('从旧 localStorage 迁移', () => {
@@ -57,6 +65,7 @@ describe('settings', () => {
       recent: [a, b],
       autoSave: false,
       printTipsDismissed: true,
+      theme: 'system',
     })
   })
 

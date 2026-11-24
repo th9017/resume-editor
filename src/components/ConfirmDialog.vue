@@ -47,26 +47,26 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.38);
+  background: var(--overlay);
 }
 
 .modal {
   width: min(420px, calc(100vw - 40px));
   padding: 20px;
   border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.24);
+  background: var(--panel);
+  box-shadow: 0 24px 64px var(--shadow-color);
 }
 
 h3 {
   margin: 0 0 10px;
-  color: #0f172a;
+  color: var(--text-strong);
   font-size: 16px;
 }
 
 p {
   margin: 0;
-  color: #475569;
+  color: var(--text-soft);
   font-size: 13px;
   line-height: 1.7;
   white-space: pre-line;

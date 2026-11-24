@@ -1,11 +1,52 @@
 :root {
+  color-scheme: light;
+
   --app-bg: #f6f7fb;
   --panel: #ffffff;
+  --panel-soft: #fbfbfe;
+  --panel-tint: #f5f6fa;
+  --panel-hover: #fafbff;
+  --sunken: #f1f2f8;
+  --preview-bg: #eef1f7;
+  --editor-active: #eef4ff;
+  /* 纸张在两种主题下都保持白色 */
+  --paper: #ffffff;
+
   --border: #e7e9f0;
+  --border-soft: #eceef5;
+  --border-strong: #c8cddb;
+  --border-dashed: #cfd4e2;
+
   --text: #1e2233;
+  --text-strong: #0f172a;
+  --text-soft: #475569;
   --muted: #8a90a2;
+
   --accent: #6d5dfc;
+  --accent-strong: #5d4ee6;
   --accent-soft: #efedff;
+  --accent-ring: var(--accent-ring);
+  --accent-grad-from: #7c6bff;
+  --accent-grad-to: #5b4de0;
+  --on-accent: #ffffff;
+
+  --danger: #b91c1c;
+  --danger-strong: #dc2626;
+  --danger-soft: #fef2f2;
+  --danger-border: #fca5a5;
+
+  --warn: #92400e;
+  --warn-text: #b45309;
+  --warn-soft: #fffbeb;
+  --warn-border: #fde68a;
+  --warn-border-strong: #fcd34d;
+
+  --overlay: var(--overlay);
+  --shadow-color: var(--shadow-color);
+  --shadow-soft: rgba(20, 23, 40, 0.1);
+  --toast-bg: #0f172a;
+  --toast-fg: #ffffff;
+
   font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
   color: var(--text);
   background: var(--app-bg);
@@ -13,6 +54,52 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --app-bg: #12151f;
+  --panel: #1b1f2b;
+  --panel-soft: #212634;
+  --panel-tint: #262c3c;
+  --panel-hover: #242a39;
+  --sunken: #171b26;
+  --preview-bg: #0d1017;
+  --editor-active: #241f3d;
+
+  --border: #2c3242;
+  --border-soft: #262c3a;
+  --border-strong: #3f465b;
+  --border-dashed: #454e66;
+
+  --text: #e6e9f2;
+  --text-strong: #f4f6fb;
+  --text-soft: #b6bdcd;
+  --muted: #878fa4;
+
+  --accent: #8a7dff;
+  --accent-strong: #7667f2;
+  --accent-soft: #272350;
+  --accent-ring: rgba(138, 125, 255, 0.2);
+  --accent-grad-from: #8a7dff;
+  --accent-grad-to: #6151e0;
+
+  --danger: #f0a3a3;
+  --danger-soft: #3a2027;
+  --danger-border: #6b3039;
+
+  --warn: #f0d9a8;
+  --warn-text: #dfae6b;
+  --warn-soft: #33291a;
+  --warn-border: #584825;
+  --warn-border-strong: #7b6231;
+
+  --overlay: rgba(3, 5, 11, 0.62);
+  --shadow-color: rgba(0, 0, 0, 0.55);
+  --shadow-soft: rgba(0, 0, 0, 0.4);
+  --toast-bg: #2a3145;
+  --toast-fg: #f4f6fb;
 }
 
 * {
@@ -59,7 +146,7 @@ select {
   min-height: 0;
   flex-direction: column;
   border-left: 1px solid var(--border);
-  background: #eef1f7;
+  background: var(--preview-bg);
 }
 
 .preview-head {
@@ -71,7 +158,7 @@ select {
   height: 46px;
   padding: 0 18px;
   border-bottom: 1px solid var(--border);
-  background: #ffffff;
+  background: var(--panel);
   color: var(--text);
   font-size: 12px;
   font-weight: 600;
@@ -93,9 +180,9 @@ select {
 .layout-note {
   flex: none;
   padding: 7px 16px;
-  border-bottom: 1px solid #fde68a;
-  background: #fffbeb;
-  color: #92400e;
+  border-bottom: 1px solid var(--warn-border);
+  background: var(--warn-soft);
+  color: var(--warn);
   font-size: 11px;
   line-height: 1.5;
 }
@@ -108,30 +195,30 @@ select {
   padding: 0 14px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--panel);
   color: var(--text);
   font-size: 13px;
   cursor: pointer;
 }
 
 .btn:hover {
-  border-color: #c8cddb;
+  border-color: var(--border-strong);
 }
 
 .btn.primary {
   border-color: var(--accent);
   background: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 .btn.primary:hover {
-  background: #5d4ee6;
+  background: var(--accent-strong);
 }
 
 .btn.danger {
   border-color: #dc2626;
   background: #dc2626;
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 .btn.danger:hover {

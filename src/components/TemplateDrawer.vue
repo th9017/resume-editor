@@ -159,7 +159,7 @@ function onAutoFit(event: Event): void {
   z-index: 1100;
   display: flex;
   justify-content: flex-end;
-  background: rgba(20, 23, 40, 0.28);
+  background: var(--overlay);
 }
 
 .drawer {
@@ -167,8 +167,8 @@ function onAutoFit(event: Event): void {
   width: min(380px, calc(100vw - 40px));
   height: 100%;
   flex-direction: column;
-  background: #ffffff;
-  box-shadow: -18px 0 48px rgba(20, 23, 40, 0.18);
+  background: var(--panel);
+  box-shadow: -18px 0 48px var(--shadow-soft);
 }
 
 .drawer-head {
@@ -199,7 +199,7 @@ function onAutoFit(event: Event): void {
   justify-content: center;
   border: 0;
   border-radius: 8px;
-  background: #f5f6fa;
+  background: var(--panel-tint);
   color: var(--muted);
   cursor: pointer;
 }
@@ -245,14 +245,14 @@ h3 em {
   padding: 6px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--panel);
   color: var(--muted);
   font-size: 11px;
   cursor: pointer;
 }
 
 .template-card:hover {
-  border-color: #c8cddb;
+  border-color: var(--border-strong);
 }
 
 .template-card.active {
@@ -267,9 +267,9 @@ h3 em {
   height: 118px;
   padding: 10px;
   overflow: hidden;
-  border: 1px solid #eceef5;
+  border: 1px solid var(--border-soft);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--paper);
 }
 
 .t-side {
@@ -365,7 +365,7 @@ h3 em {
   padding: 3px;
   border: 1px solid var(--border);
   border-radius: 9px;
-  background: #f7f8fc;
+  background: var(--panel-tint);
 }
 
 .segmented button {
@@ -380,10 +380,10 @@ h3 em {
 }
 
 .segmented button.active {
-  background: #ffffff;
+  background: var(--panel);
   color: var(--accent);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(20, 23, 40, 0.08);
+  box-shadow: 0 1px 3px var(--shadow-soft);
 }
 
 .switch-row {

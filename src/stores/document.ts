@@ -14,6 +14,7 @@ import {
   saveAppSettings,
   type AppSettings,
 } from '../core/settings'
+import { resolveTheme, type ThemePreference } from '../core/theme'
 import { STARTER_MARKDOWN } from '../samples/starter'
 import {
   ensureDir,
@@ -53,6 +54,7 @@ export const appState = reactive({
   recent: [] as RecentFile[],
   autoSave: true,
   printTipsDismissed: false,
+  theme: 'system' as ThemePreference,
   toast: null as ToastMessage | null,
 })
 
@@ -92,6 +94,7 @@ function settingsSnapshot(): AppSettings {
     recent: appState.recent,
     autoSave: appState.autoSave,
     printTipsDismissed: appState.printTipsDismissed,
+    theme: appState.theme,
   }
 }
 
@@ -103,15 +106,35 @@ function persistSettings(): void {
   }, 200)
 }
 
+let darkQuery: MediaQueryList | null = null
+
+/** 主题只作用于应用外壳，简历纸张保持白纸黑字 */
+export function applyTheme(): void {
+  if (typeof document === 'undefined') return
+  document.documentElement.dataset.theme = resolveTheme(appState.theme, darkQuery?.matches ?? false)
+}
+
+export function setTheme(preference: ThemePreference): void {
+  appState.theme = preference
+  applyTheme()
+  persistSettings()
+}
+
 export async function initSettings(): Promise<void> {
   try {
     const settings = await loadAppSettings()
     appState.recent = settings.recent
     appState.autoSave = settings.autoSave
     appState.printTipsDismissed = settings.printTipsDismissed
+    appState.theme = settings.theme
   } catch {
     /* 设置读取失败时保持默认值 */
   }
+  if (typeof matchMedia === 'function') {
+    darkQuery = matchMedia('(prefers-color-scheme: dark)')
+    darkQuery.addEventListener('change', applyTheme)
+  }
+  applyTheme()
 }
 
 export function setPrintTipsDismissed(): void {

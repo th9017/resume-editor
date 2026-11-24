@@ -22,8 +22,8 @@ const editorTheme = EditorView.theme({
   '&': {
     height: '100%',
     fontSize: '13px',
-    color: '#1e293b',
-    backgroundColor: '#fbfcfe',
+    color: 'var(--text)',
+    backgroundColor: 'var(--panel-soft)',
   },
   '.cm-scroller': {
     fontFamily: 'Consolas, "Courier New", monospace',
@@ -31,18 +31,18 @@ const editorTheme = EditorView.theme({
   },
   '.cm-content': {
     padding: '12px 0',
-    caretColor: '#2563eb',
+    caretColor: 'var(--accent)',
   },
   '.cm-gutters': {
     border: 'none',
-    backgroundColor: '#f8fafc',
-    color: '#94a3b8',
+    backgroundColor: 'var(--sunken)',
+    color: 'var(--muted)',
   },
   '.cm-activeLine': {
-    backgroundColor: '#eef4ff',
+    backgroundColor: 'var(--editor-active)',
   },
   '.cm-activeLineGutter': {
-    backgroundColor: '#e6eefc',
+    backgroundColor: 'var(--editor-active)',
   },
   '&.cm-focused': {
     outline: 'none',

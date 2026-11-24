@@ -13,6 +13,7 @@ import {
   Undo2,
 } from 'lucide-vue-next'
 import type { RecentFile } from '../core/recent'
+import { THEME_OPTIONS, type ThemePreference } from '../core/theme'
 
 defineProps<{
   name: string
@@ -23,6 +24,7 @@ defineProps<{
   autoSave: boolean
   canUndo: boolean
   canRedo: boolean
+  theme: ThemePreference
 }>()
 
 const emit = defineEmits<{
@@ -37,6 +39,7 @@ const emit = defineEmits<{
   (event: 'toggleAutoSave'): void
   (event: 'undo'): void
   (event: 'redo'): void
+  (event: 'setTheme', theme: ThemePreference): void
 }>()
 
 const more = ref<HTMLDetailsElement>()
@@ -126,6 +129,18 @@ function openRecent(path: string): void {
             <span>自动保存</span>
           </label>
           <div class="menu-sep"></div>
+          <div class="recent-title">外观</div>
+          <div class="theme-row">
+            <button
+              v-for="option in THEME_OPTIONS"
+              :key="option.value"
+              :class="{ active: theme === option.value }"
+              @click="emit('setTheme', option.value)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+          <div class="menu-sep"></div>
           <div class="recent-title">最近文件</div>
           <button
             v-for="item in recent"
@@ -152,7 +167,7 @@ function openRecent(path: string): void {
   height: 58px;
   padding: 0 18px;
   border-bottom: 1px solid var(--border);
-  background: #ffffff;
+  background: var(--panel);
 }
 
 .brand {
@@ -169,8 +184,8 @@ function openRecent(path: string): void {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: linear-gradient(135deg, #7c6bff, #5b4de0);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--accent-grad-from), var(--accent-grad-to));
+  color: var(--on-accent);
   font-size: 17px;
   font-weight: 700;
 }
@@ -216,7 +231,7 @@ function openRecent(path: string): void {
 }
 
 .save-state.dirty {
-  color: #b45309;
+  color: var(--warn-text);
 }
 
 .top-actions {
@@ -234,26 +249,26 @@ function openRecent(path: string): void {
   padding: 0 12px;
   border: 1px solid var(--border);
   border-radius: 9px;
-  background: #ffffff;
-  color: #3f4455;
+  background: var(--panel);
+  color: var(--text-soft);
   font-size: 12px;
   cursor: pointer;
   white-space: nowrap;
 }
 
 .tb-btn:hover {
-  border-color: #c8cddb;
-  background: #fafbff;
+  border-color: var(--border-strong);
+  background: var(--panel-hover);
 }
 
 .tb-btn.primary {
   border-color: var(--accent);
   background: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 .tb-btn.primary:hover {
-  background: #5d4ee6;
+  background: var(--accent-strong);
 }
 
 .tb-btn:disabled {
@@ -290,8 +305,8 @@ function openRecent(path: string): void {
   padding: 6px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 18px 48px rgba(23, 26, 45, 0.18);
+  background: var(--panel);
+  box-shadow: 0 18px 48px var(--shadow-soft);
 }
 
 .more-menu > button,
@@ -303,7 +318,7 @@ function openRecent(path: string): void {
   border: 0;
   border-radius: 7px;
   background: transparent;
-  color: #3f4455;
+  color: var(--text-soft);
   font-size: 12px;
   text-align: left;
   cursor: pointer;
@@ -311,11 +326,40 @@ function openRecent(path: string): void {
 
 .more-menu > button:hover,
 .more-menu .auto-save:hover {
-  background: #f5f6fb;
+  background: var(--panel-tint);
 }
 
 .auto-save input {
   accent-color: var(--accent);
+}
+
+.theme-row {
+  display: flex;
+  gap: 4px;
+  padding: 2px 4px 6px;
+}
+
+.theme-row button {
+  flex: 1;
+  height: 26px;
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--panel-tint);
+  color: var(--text-soft);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.theme-row button:hover {
+  border-color: var(--border-strong);
+}
+
+.theme-row button.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .menu-sep {

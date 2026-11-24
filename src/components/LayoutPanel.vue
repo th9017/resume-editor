@@ -105,9 +105,9 @@ function openAddMenu(): void {
 
 .layout-hint {
   padding: 10px 12px;
-  border: 1px solid #e4e7f2;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--panel);
   color: var(--muted);
   font-size: 11px;
   line-height: 1.6;
@@ -126,7 +126,7 @@ function openAddMenu(): void {
   padding: 9px 10px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--panel);
 }
 
 .section-icon {
@@ -165,7 +165,7 @@ function openAddMenu(): void {
   padding: 0 4px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: #fbfbfe;
+  background: var(--panel-soft);
   color: var(--muted);
   font-size: 10px;
 }
@@ -190,7 +190,7 @@ function openAddMenu(): void {
 }
 
 .row-actions button:hover {
-  background: #f4f5fa;
+  background: var(--panel-tint);
   color: var(--text);
 }
 
@@ -200,15 +200,15 @@ function openAddMenu(): void {
 }
 
 .row-actions button.danger:hover {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .empty {
   padding: 22px;
-  border: 1px dashed #d8dcea;
+  border: 1px dashed var(--border-dashed);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--panel);
   color: var(--muted);
   font-size: 11px;
   text-align: center;
@@ -220,9 +220,9 @@ function openAddMenu(): void {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border: 1px dashed #cfd4e2;
+  border: 1px dashed var(--border-dashed);
   border-radius: 9px;
-  background: #fbfbff;
+  background: var(--panel-soft);
   color: var(--accent);
   font-size: 12px;
   cursor: pointer;
