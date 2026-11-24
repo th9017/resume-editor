@@ -26,6 +26,8 @@
 
 ## 绿色版使用
 
+现成产物见 [Releases](https://github.com/th9017/resume-editor/releases/tag/v0.1.0) 的 `ResumeEditor-portable.zip`（含 SHA-256 校验值）。
+
 1. 构建或获取 `ResumeEditor-portable.zip`。
 2. 解压到任意可写目录。
 3. 双击 `ResumeEditor.exe`（依赖 Windows 10/11 自带的 WebView2）。
