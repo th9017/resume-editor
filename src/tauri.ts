@@ -11,12 +11,14 @@ import {
 } from '@tauri-apps/plugin-fs'
 import { openUrl } from '@tauri-apps/plugin-opener'
 
-export async function pickMarkdownFile(): Promise<string | null> {
+export async function pickMarkdownFile(options: { docx?: boolean } = {}): Promise<string | null> {
   const path = await open({
     multiple: false,
     directory: false,
     title: '打开简历',
-    filters: [{ name: 'Markdown', extensions: ['md', 'markdown'] }],
+    filters: options.docx
+      ? [{ name: '简历', extensions: ['md', 'markdown', 'docx'] }]
+      : [{ name: 'Markdown', extensions: ['md', 'markdown'] }],
   })
   return typeof path === 'string' ? path : null
 }

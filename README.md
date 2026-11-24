@@ -15,6 +15,7 @@
 - 源码模式：直接编辑 Markdown，带诊断跳转；返回表单时提示不支持内容
 - 单文档打开/保存/另存为、另存为副本、与另一份 `.md` 行级对比、最近文件、800ms 自动保存、关闭前确认
 - 普通 Markdown 导入：打开 `## 工作经历` 式文件时可选择自动整理成章节结构
+- DOCX 导入：读取 Word 正文与标题层级转成 Markdown，同样可自动整理；不改动原 `.docx`
 - 头像与图片：图片写入 `.md` 同目录 `assets/`
 - 本地简历质检：时间倒序、联系方式、要点量化、标点混用等规则检查，不联网
 - 页数估算、分页参考线、双栏超页自动降级单栏
@@ -69,6 +70,7 @@ CARGO_NET_OFFLINE=true npm run build:portable
 - 「更多」菜单包含新建、另存为、另存为副本、最近文件和源码模式；自动保存开关也在其中。
 - 「另存为副本」在当前目录生成 `简历-副本.md`（重名自动加序号）并切换过去编辑；副本与原文件同目录，`assets/` 图片无需复制，适合按岗位维护多份简历。
 - 「与文件对比」选另一份 `.md`，以当前文档为基准做行级 diff，相同行只保留上下文；只读展示，不写入任何文件。
+- 「打开」也接受 `.docx`：解压读取 `word/document.xml`，按 `Heading` 样式、`outlineLvl` 或整段加粗推断标题层级，转成 Markdown 后询问是否自动整理。保存写入同目录同名 `.md`（已存在则弹出保存对话框），原 Word 文件不会被改写。
 - 「更多 → 外观」切换跟随系统 / 浅色 / 深色，偏好写入 `data/settings.json`；深色只作用于应用界面，简历纸张与导出 PDF 仍是白底。
 - 「简历质检」在左侧导航底部，徽标数字是问题条数；面板按「必须处理 / 建议处理 / 可选优化」分组，点「定位」跳到对应章节。
 - 快捷键：`Ctrl+S` 保存、`Ctrl+Shift+S` 另存为、`Ctrl+O` 打开、`Ctrl+N` 新建、`Ctrl+Z` 撤销、`Ctrl+Shift+Z` / `Ctrl+Y` 重做。
@@ -172,7 +174,7 @@ stack: TypeScript / Vue 3 / Tauri
 
 ```text
 src/
-  core/                 解析、Draft 模型、序列化、渲染、分页、打印、图片、设置
+  core/                 解析、Draft 模型、序列化、渲染、分页、打印、图片、设置、DOCX 导入
   components/           三栏 UI、表单、模板抽屉、源码模式、对话框
   stores/               文档生命周期、自动保存、表单/源码状态
 tests/                  Vitest 单元测试
@@ -184,7 +186,7 @@ scripts/                绿色版打包
 ## 测试
 
 ```bash
-npm test          # 153 个单元测试
+npm test          # 168 个单元测试
 npm run build     # vue-tsc + Vite 构建
 cd src-tauri && cargo test --offline   # 含真实生成 PDF 的用例
 npm run build:portable
@@ -195,7 +197,8 @@ npm run build:portable
 ## 已知限制
 
 - 表单只保证应用自身 Markdown 格式；复杂手写 Markdown 请用源码模式。
-- 仅支持 UTF-8 的 `.md` 文件；不支持 DOCX/PDF 导入。
+- 仅支持 UTF-8 的 `.md` 保存格式；不支持 PDF 导入。
+- DOCX 导入是尽力而为：只提取正文文字、标题层级和项目符号，图片、表格线、字体字号、页眉页脚都不保留。表格排版或多字段容器（文本框）里的内容会被摊平成普通段落，套表格的 Word 简历可能需要手动归位。
 - 直接导出 PDF 依赖本机已安装 Edge 或 Chrome；两者都没有时自动回退系统打印窗口。
 - 远程图片打印效果取决于网络；本地图片会被内联。
 - Windows 优先；绿色版依赖 WebView2 运行时。

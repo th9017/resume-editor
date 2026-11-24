@@ -2,8 +2,16 @@ import { computed, reactive, watch } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { collectImageRefs, resolveImagePath } from '../core/images'
 import { compressDiff, diffLines, summarize, type DiffChunk } from '../core/diff'
+import { docxToMarkdown } from '../core/docx'
 import { importPlainMarkdown, looksLikePlainMarkdown } from '../core/markdownImport'
-import { baseName, copyCandidate, isAbsolutePath, parentDir, sanitizeFileName } from '../core/paths'
+import {
+  baseName,
+  copyCandidate,
+  isAbsolutePath,
+  joinPath,
+  parentDir,
+  sanitizeFileName,
+} from '../core/paths'
 import { parseResume } from '../core/parser'
 import {
   pushRecent,
@@ -332,7 +340,7 @@ export async function openDocument(targetPath?: string): Promise<boolean> {
   let target: string | null | undefined = targetPath
   if (!target) {
     try {
-      target = await pickMarkdownFile()
+      target = await pickMarkdownFile({ docx: true })
     } catch (error) {
       showToast(`无法打开文件对话框：${messageOf(error)}`, 'error')
       return false
@@ -340,16 +348,26 @@ export async function openDocument(targetPath?: string): Promise<boolean> {
   }
   if (!target) return false
   try {
-    const content = await maybeImportMarkdown(await readTextFile(target))
+    const fromDocx = /\.docx$/i.test(target)
+    const content = fromDocx
+      ? await importDocx(target)
+      : await maybeImportMarkdown(await readTextFile(target))
+    const path = fromDocx ? await markdownSibling(target) : target
     cancelAutoSave()
-    docState.path = target
+    docState.path = path
     docState.content = content
-    docState.savedContent = content
-    docState.mtime = await fileMtime(target)
+    docState.savedContent = fromDocx ? '' : content
+    docState.mtime = path ? await fileMtime(path) : null
     docState.lastSavedAt = ''
-    addRecent(target, content)
+    addRecent(path || target, content)
     void refreshWindowTitle()
-    showToast('已打开简历')
+    showToast(
+      fromDocx
+        ? path
+          ? 'DOCX 已转换，保存后写入同名 .md'
+          : 'DOCX 已转换，请选择保存位置'
+        : '已打开简历',
+    )
     return true
   } catch (error) {
     showToast(`打开失败：${messageOf(error)}`, 'error')
@@ -369,6 +387,21 @@ async function maybeImportMarkdown(content: string): Promise<string> {
     { title: '导入 Markdown', confirmLabel: '自动整理' },
   )
   return ok ? importPlainMarkdown(content) : content
+}
+
+async function importDocx(path: string): Promise<string> {
+  const markdown = await docxToMarkdown(await readBinaryFile(path))
+  const ok = await askConfirm(
+    'DOCX 已读出正文并转成 Markdown。自动整理可以把标题映射成可编辑章节。\n\n图片、表格和字体样式不会保留，原 .docx 不会被改写，保存时写入的是 .md 文件。',
+    { title: '导入 DOCX', confirmLabel: '自动整理' },
+  )
+  return ok ? importPlainMarkdown(markdown) : markdown
+}
+
+/** 同目录同名 .md；若已存在则留空，交给保存对话框，避免覆盖别的简历 */
+async function markdownSibling(path: string): Promise<string> {
+  const candidate = joinPath(parentDir(path), `${baseName(path).replace(/\.docx$/i, '')}.md`)
+  return (await fileExists(candidate)) ? '' : candidate
 }
 
 export const diffState = reactive({
@@ -466,6 +499,10 @@ function addRecent(path: string, content: string): void {
 }
 
 function updateRecentForPath(path: string, content: string): void {
+  if (!appState.recent.some((item) => item.path === path)) {
+    addRecent(path, content)
+    return
+  }
   const name = parseResume(content).identity.name || baseName(path)
   appState.recent = updateRecentName(appState.recent, path, name)
   persistSettings()

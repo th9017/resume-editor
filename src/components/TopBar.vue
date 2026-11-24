@@ -101,7 +101,7 @@ function openRecent(path: string): void {
       >
         <Redo2 :size="16" />
       </button>
-      <button class="tb-btn" @click="emit('open')">
+      <button class="tb-btn" title="打开 .md，或导入 .docx" @click="emit('open')">
         <FolderOpen :size="16" />
         <span>打开</span>
       </button>
