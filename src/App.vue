@@ -17,6 +17,7 @@ import { assetUrl, exportPdf, pickPdfPath, readBinaryFile } from './tauri'
 import {
   appState,
   bindCloseHandler,
+  compareWithFile,
   dirty,
   docState,
   initSettings,
@@ -56,6 +57,7 @@ import SourcePanel from './components/SourcePanel.vue'
 import SourceWarningDialog from './components/SourceWarningDialog.vue'
 import PreviewPane from './components/PreviewPane.vue'
 import ConfirmDialog from './components/ConfirmDialog.vue'
+import DiffDialog from './components/DiffDialog.vue'
 import PrintTipsDialog from './components/PrintTipsDialog.vue'
 import Toast from './components/Toast.vue'
 
@@ -213,6 +215,11 @@ function handleSaveAs(): void {
 async function handleSaveCopy(): Promise<void> {
   flushDraft()
   await saveDocumentCopy()
+}
+
+async function handleCompare(): Promise<void> {
+  flushDraft()
+  await compareWithFile()
 }
 
 function handleSourcePlaceholder(): void {
@@ -384,6 +391,7 @@ onBeforeUnmount(() => {
       @save="handleSave"
       @save-as="handleSaveAs"
       @save-copy="handleSaveCopy"
+      @compare="handleCompare"
       @export="handleExport"
       @template="openTemplate"
       @recent="handleOpen"
@@ -429,6 +437,7 @@ onBeforeUnmount(() => {
     <AddSectionMenu />
     <SourceWarningDialog />
     <ConfirmDialog />
+    <DiffDialog />
     <PrintTipsDialog
       :open="printTipsOpen"
       @confirm="onPrintTipsConfirm"

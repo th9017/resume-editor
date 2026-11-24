@@ -6,6 +6,7 @@ import {
   Download,
   FilePlus2,
   FolderOpen,
+  GitCompare,
   LayoutTemplate,
   MoreHorizontal,
   PanelRight,
@@ -37,6 +38,7 @@ const emit = defineEmits<{
   (event: 'save'): void
   (event: 'saveAs'): void
   (event: 'saveCopy'): void
+  (event: 'compare'): void
   (event: 'export'): void
   (event: 'template'): void
   (event: 'recent', path: string): void
@@ -55,10 +57,11 @@ function closeMore(): void {
   if (more.value) more.value.open = false
 }
 
-function emitAndClose(event: 'new' | 'saveAs' | 'saveCopy' | 'source'): void {
+function emitAndClose(event: 'new' | 'saveAs' | 'saveCopy' | 'compare' | 'source'): void {
   if (event === 'new') emit('new')
   else if (event === 'saveAs') emit('saveAs')
   else if (event === 'saveCopy') emit('saveCopy')
+  else if (event === 'compare') emit('compare')
   else emit('source')
   closeMore()
 }
@@ -135,6 +138,10 @@ function openRecent(path: string): void {
           <button @click="emitAndClose('saveCopy')">
             <Copy :size="15" />
             <span>另存为副本</span>
+          </button>
+          <button @click="emitAndClose('compare')">
+            <GitCompare :size="15" />
+            <span>与文件对比</span>
           </button>
           <button @click="emitAndClose('source')">
             <Code2 :size="15" />

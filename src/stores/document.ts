@@ -1,6 +1,7 @@
 import { computed, reactive, watch } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { collectImageRefs, resolveImagePath } from '../core/images'
+import { compressDiff, diffLines, summarize, type DiffChunk } from '../core/diff'
 import { importPlainMarkdown, looksLikePlainMarkdown } from '../core/markdownImport'
 import { baseName, copyCandidate, isAbsolutePath, parentDir, sanitizeFileName } from '../core/paths'
 import { parseResume } from '../core/parser'
@@ -368,6 +369,43 @@ async function maybeImportMarkdown(content: string): Promise<string> {
     { title: '导入 Markdown', confirmLabel: '自动整理' },
   )
   return ok ? importPlainMarkdown(content) : content
+}
+
+export const diffState = reactive({
+  open: false,
+  path: '',
+  chunks: [] as DiffChunk[],
+  added: 0,
+  removed: 0,
+})
+
+/** 把当前文档与另一份 .md 做行级对比，当前文档作为基准 */
+export async function compareWithFile(): Promise<void> {
+  let target: string | null = null
+  try {
+    target = await pickMarkdownFile()
+  } catch (error) {
+    showToast(`无法打开文件对话框：${messageOf(error)}`, 'error')
+    return
+  }
+  if (!target) return
+  try {
+    const other = await readTextFile(target)
+    const lines = diffLines(docState.content, other)
+    const summary = summarize(lines)
+    diffState.path = target
+    diffState.chunks = compressDiff(lines)
+    diffState.added = summary.added
+    diffState.removed = summary.removed
+    diffState.open = true
+    if (!summary.changed) showToast('两份文件内容一致')
+  } catch (error) {
+    showToast(`对比失败：${messageOf(error)}`, 'error')
+  }
+}
+
+export function closeDiff(): void {
+  diffState.open = false
 }
 
 async function ensureSaved(): Promise<boolean> {
