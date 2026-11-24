@@ -1,6 +1,7 @@
 import { computed, reactive, watch } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { collectImageRefs, resolveImagePath } from '../core/images'
+import { importPlainMarkdown, looksLikePlainMarkdown } from '../core/markdownImport'
 import { baseName, isAbsolutePath, parentDir, sanitizeFileName } from '../core/paths'
 import { parseResume } from '../core/parser'
 import {
@@ -306,7 +307,7 @@ export async function openDocument(targetPath?: string): Promise<boolean> {
   }
   if (!target) return false
   try {
-    const content = await readTextFile(target)
+    const content = await maybeImportMarkdown(await readTextFile(target))
     cancelAutoSave()
     docState.path = target
     docState.content = content
@@ -325,6 +326,16 @@ export async function openDocument(targetPath?: string): Promise<boolean> {
     }
     return false
   }
+}
+
+/** 普通 Markdown 先问一句，避免静默改写用户文件结构 */
+async function maybeImportMarkdown(content: string): Promise<string> {
+  if (!looksLikePlainMarkdown(content)) return content
+  const ok = await askConfirm(
+    '这份文件是普通 Markdown。自动整理可以把「## 工作经历」这类标题映射成可编辑章节，原文不会被删除。\n\n不整理则保留原样。',
+    { title: '导入 Markdown', confirmLabel: '自动整理' },
+  )
+  return ok ? importPlainMarkdown(content) : content
 }
 
 async function ensureSaved(): Promise<boolean> {

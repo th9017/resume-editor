@@ -8,6 +8,7 @@ import {
 } from './core/images'
 import { baseName, joinPath, parentDir, sanitizeFileName } from './core/paths'
 import { computeLayoutPlan, type LayoutPlan } from './core/measure'
+import { looksLikePlainMarkdown } from './core/markdownImport'
 import { renderResume } from './core/render/renderer'
 import { getTemplate } from './core/render/templates'
 import { buildResumePrintHtml, printHtml } from './core/print'
@@ -187,7 +188,12 @@ async function handleNew(): Promise<void> {
 
 async function handleOpen(path?: string): Promise<void> {
   flushDraft()
-  if (await openDocument(path)) loadFromContent(docState.content)
+  if (!(await openDocument(path))) return
+  loadFromContent(docState.content)
+  if (looksLikePlainMarkdown(docState.content)) {
+    enterSourceMode()
+    showToast('未自动整理，已在源码模式中打开')
+  }
 }
 
 function handleSave(): void {
