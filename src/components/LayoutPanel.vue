@@ -2,6 +2,7 @@
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-vue-next'
 import type { DraftSection } from '../core/draft'
 import { SECTION_META } from '../core/types'
+import { askConfirm } from '../stores/document'
 import {
   draft,
   editorState,
@@ -28,9 +29,13 @@ function setPlacement(section: DraftSection, event: Event): void {
   structuralEdit(`placement:${section.id}`)
 }
 
-function remove(section: DraftSection): void {
-  if (!window.confirm(`删除「${labelFor(section)}」章节及其内容？`)) return
-  removeSection(section.id)
+async function remove(section: DraftSection): Promise<void> {
+  const ok = await askConfirm(`删除「${labelFor(section)}」章节及其全部内容？`, {
+    title: '删除章节',
+    confirmLabel: '删除',
+    danger: true,
+  })
+  if (ok) removeSection(section.id)
 }
 
 function openAddMenu(): void {

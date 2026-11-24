@@ -13,6 +13,7 @@ import {
   type DraftSection,
 } from '../core/draft'
 import { FIELD_LABELS } from '../core/types'
+import { askConfirm } from '../stores/document'
 import { moveItem, removeItem, touchDraft } from '../stores/editor'
 import BulletListEditor from './BulletListEditor.vue'
 
@@ -73,8 +74,13 @@ function move(delta: -1 | 1): void {
   moveItem(props.section.id, props.item.id, delta)
 }
 
-function remove(): void {
-  if (window.confirm('删除这个条目？')) removeItem(props.section.id, props.item.id)
+async function remove(): Promise<void> {
+  const ok = await askConfirm(`删除条目「${summary.value}」及其要点？`, {
+    title: '删除条目',
+    confirmLabel: '删除',
+    danger: true,
+  })
+  if (ok) removeItem(props.section.id, props.item.id)
 }
 </script>
 

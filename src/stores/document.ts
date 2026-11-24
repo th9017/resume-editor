@@ -28,6 +28,14 @@ import {
 } from '../tauri'
 
 export type ConfirmDecision = 'save' | 'discard' | 'cancel'
+export type ConfirmValue = ConfirmDecision | 'confirm'
+
+export interface ConfirmButton {
+  value: ConfirmValue
+  label: string
+  variant: 'default' | 'primary' | 'danger'
+}
+
 export interface ToastMessage {
   text: string
   kind: 'info' | 'error'
@@ -61,8 +69,10 @@ export const documentName = computed(() => {
 
 export const confirmState = reactive({
   open: false,
+  title: '请确认',
   message: '',
-  resolve: null as ((decision: ConfirmDecision) => void) | null,
+  buttons: [] as ConfirmButton[],
+  resolve: null as ((value: ConfirmValue) => void) | null,
 })
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null
@@ -118,20 +128,58 @@ export function showToast(text: string, kind: 'info' | 'error' = 'info'): void {
   }, 3500)
 }
 
-export function requestDecision(message: string): Promise<ConfirmDecision> {
+const UNSAVED_BUTTONS: ConfirmButton[] = [
+  { value: 'cancel', label: '取消', variant: 'default' },
+  { value: 'discard', label: '不保存', variant: 'default' },
+  { value: 'save', label: '保存', variant: 'primary' },
+]
+
+function openConfirm(
+  title: string,
+  message: string,
+  buttons: ConfirmButton[],
+): Promise<ConfirmValue> {
   if (confirmState.resolve) confirmState.resolve('cancel')
+  confirmState.title = title
   confirmState.message = message
+  confirmState.buttons = buttons
   confirmState.open = true
   return new Promise((resolve) => {
     confirmState.resolve = resolve
   })
 }
 
-export function resolveDecision(decision: ConfirmDecision): void {
+export function requestDecision(message: string): Promise<ConfirmDecision> {
+  return openConfirm('未保存的修改', message, UNSAVED_BUTTONS).then((value) =>
+    value === 'save' || value === 'discard' || value === 'cancel' ? value : 'cancel',
+  )
+}
+
+/** 应用内的二次确认，取代原生 window.confirm */
+export function askConfirm(
+  message: string,
+  options: { title?: string; confirmLabel?: string; danger?: boolean } = {},
+): Promise<boolean> {
+  if (typeof window === 'undefined') return Promise.resolve(false)
+  const buttons: ConfirmButton[] = [
+    { value: 'cancel', label: '取消', variant: 'default' },
+    {
+      value: 'confirm',
+      label: options.confirmLabel ?? '确定',
+      variant: options.danger ? 'danger' : 'primary',
+    },
+  ]
+  return openConfirm(options.title ?? '请确认', message, buttons).then(
+    (value) => value === 'confirm',
+  )
+}
+
+export function resolveDecision(value: ConfirmValue): void {
   const resolve = confirmState.resolve
   confirmState.open = false
   confirmState.resolve = null
-  resolve?.(decision)
+  confirmState.buttons = []
+  resolve?.(value)
 }
 
 export async function saveDocument(options: { silent?: boolean } = {}): Promise<boolean> {
@@ -328,10 +376,10 @@ async function copyAssetsForSaveAs(
   if (!previousPath || parentDir(previousPath) === parentDir(nextPath)) return none
   const refs = collectImageRefs(parseResume(content)).filter((ref) => !isAbsolutePath(ref))
   if (refs.length === 0) return none
-  const confirmed =
-    typeof window === 'undefined'
-      ? false
-      : window.confirm(`检测到 ${refs.length} 张本地图片，是否复制到新目录？`)
+  const confirmed = await askConfirm(
+    `检测到 ${refs.length} 张本地图片，是否复制到新目录？`,
+    { title: '复制图片', confirmLabel: '复制' },
+  )
   if (!confirmed) return none
 
   let copied = 0

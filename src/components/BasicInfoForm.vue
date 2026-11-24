@@ -10,7 +10,7 @@ import {
   readBinaryFile,
   writeBinaryFile,
 } from '../tauri'
-import { docState, showToast } from '../stores/document'
+import { askConfirm, docState, showToast } from '../stores/document'
 import { draft, structuralEdit, touchDraft } from '../stores/editor'
 
 const identity = computed(() => draft.value?.identity ?? null)
@@ -94,7 +94,12 @@ async function pickAvatar(): Promise<void> {
   }
   try {
     const bytes = await readBinaryFile(selected)
-    if (bytes.length > 5 * 1024 * 1024 && !window.confirm('图片大于 5MB，仍要使用吗？')) return
+    if (
+      bytes.length > 5 * 1024 * 1024 &&
+      !(await askConfirm('图片大于 5MB，仍要使用吗？', { title: '图片过大', confirmLabel: '仍然使用' }))
+    ) {
+      return
+    }
     const assetsDir = joinPath(parentDir(docState.path), 'assets')
     await ensureDir(assetsDir)
     const name = assetFileName('avatar', ext)

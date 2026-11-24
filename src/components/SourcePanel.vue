@@ -7,7 +7,7 @@ import {
   ensureDir,
   writeBinaryFile,
 } from '../tauri'
-import { docState, showToast } from '../stores/document'
+import { askConfirm, docState, showToast } from '../stores/document'
 import { requestSourceSwitch, sourceDiagnostics } from '../stores/editor'
 import CodeMirrorEditor from './CodeMirrorEditor.vue'
 import DiagnosticsBar from './DiagnosticsBar.vue'
@@ -39,7 +39,10 @@ async function handlePasteImages(files: File[]): Promise<void> {
         continue
       }
       const bytes = new Uint8Array(await file.arrayBuffer())
-      if (bytes.length > 5 * 1024 * 1024 && !window.confirm('图片大于 5MB，仍要插入吗？')) {
+      if (
+        bytes.length > 5 * 1024 * 1024 &&
+        !(await askConfirm('图片大于 5MB，仍要插入吗？', { title: '图片过大', confirmLabel: '仍然插入' }))
+      ) {
         continue
       }
       const ext = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1]

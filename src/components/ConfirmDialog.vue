@@ -1,5 +1,17 @@
 <script setup lang="ts">
+import { nextTick, ref, watch } from 'vue'
 import { confirmState, resolveDecision } from '../stores/document'
+
+const actions = ref<HTMLDivElement>()
+
+watch(
+  () => confirmState.open,
+  async (open) => {
+    if (!open) return
+    await nextTick()
+    actions.value?.querySelector<HTMLButtonElement>('.btn')?.focus()
+  },
+)
 </script>
 
 <template>
@@ -7,14 +19,21 @@ import { confirmState, resolveDecision } from '../stores/document'
     v-if="confirmState.open"
     class="modal-backdrop"
     @click.self="resolveDecision('cancel')"
+    @keydown.esc="resolveDecision('cancel')"
   >
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-      <h3 id="confirm-title">未保存的修改</h3>
+      <h3 id="confirm-title">{{ confirmState.title }}</h3>
       <p>{{ confirmState.message }}</p>
-      <div class="modal-actions">
-        <button class="btn" @click="resolveDecision('cancel')">取消</button>
-        <button class="btn" @click="resolveDecision('discard')">不保存</button>
-        <button class="btn primary" @click="resolveDecision('save')">保存</button>
+      <div ref="actions" class="modal-actions">
+        <button
+          v-for="button in confirmState.buttons"
+          :key="button.value"
+          class="btn"
+          :class="button.variant === 'default' ? null : button.variant"
+          @click="resolveDecision(button.value)"
+        >
+          {{ button.label }}
+        </button>
       </div>
     </div>
   </div>
@@ -50,6 +69,7 @@ p {
   color: #475569;
   font-size: 13px;
   line-height: 1.7;
+  white-space: pre-line;
 }
 
 .modal-actions {
