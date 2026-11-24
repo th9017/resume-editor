@@ -43,6 +43,15 @@ export function resolveRelative(baseDir: string, ref: string): string {
   return joinPath(baseDir, decoded)
 }
 
+/** 副本文件名：简历.md → 简历-副本.md → 简历-副本-2.md */
+export function copyCandidate(path: string, attempt: number): string {
+  const base = baseName(path)
+  const stem = base.replace(/\.(md|markdown)$/i, '')
+  const ext = stem === base ? '.md' : base.slice(stem.length)
+  const suffix = attempt <= 1 ? '-副本' : `-副本-${attempt}`
+  return joinPath(parentDir(path), `${stem}${suffix}${ext}`)
+}
+
 export function sanitizeFileName(name: string): string {
   const cleaned = name
     .replace(/[<>:"/\\|?*\u0000-\u001f]/g, ' ')

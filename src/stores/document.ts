@@ -2,7 +2,7 @@ import { computed, reactive, watch } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { collectImageRefs, resolveImagePath } from '../core/images'
 import { importPlainMarkdown, looksLikePlainMarkdown } from '../core/markdownImport'
-import { baseName, isAbsolutePath, parentDir, sanitizeFileName } from '../core/paths'
+import { baseName, copyCandidate, isAbsolutePath, parentDir, sanitizeFileName } from '../core/paths'
 import { parseResume } from '../core/parser'
 import {
   pushRecent,
@@ -273,6 +273,38 @@ export async function saveDocumentAs(options: { silent?: boolean } = {}): Promis
     return true
   } catch (error) {
     showToast(`保存失败：${messageOf(error)}`, 'error')
+    return false
+  } finally {
+    saving = false
+  }
+}
+
+/** 在当前目录生成一份副本并切换过去编辑，assets/ 相对引用不受影响 */
+export async function saveDocumentCopy(): Promise<boolean> {
+  if (!docState.path) return await saveDocumentAs()
+  const previous = docState.path
+  let attempt = 1
+  let target = copyCandidate(previous, attempt)
+  while (attempt < 30 && (await fileExists(target))) {
+    attempt += 1
+    target = copyCandidate(previous, attempt)
+  }
+  if (saving) return false
+  cancelAutoSave()
+  saving = true
+  const content = docState.content
+  try {
+    await writeTextFile(target, content)
+    docState.path = target
+    docState.savedContent = content
+    docState.mtime = await fileMtime(target)
+    docState.lastSavedAt = nowLabel()
+    addRecent(target, content)
+    void refreshWindowTitle()
+    showToast(`已另存副本 ${baseName(target)}`)
+    return true
+  } catch (error) {
+    showToast(`另存副本失败：${messageOf(error)}`, 'error')
     return false
   } finally {
     saving = false

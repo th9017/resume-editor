@@ -24,6 +24,7 @@ import {
   refreshWindowTitle,
   saveDocument,
   saveDocumentAs,
+  saveDocumentCopy,
   setBeforeCloseHook,
   setPrintTipsDismissed,
   setTheme,
@@ -206,6 +207,11 @@ function handleSaveAs(): void {
   void saveDocumentAs()
 }
 
+async function handleSaveCopy(): Promise<void> {
+  flushDraft()
+  await saveDocumentCopy()
+}
+
 function handleSourcePlaceholder(): void {
   if (editorState.mode === 'form') enterSourceMode()
   else requestSourceSwitch()
@@ -373,6 +379,7 @@ onBeforeUnmount(() => {
       @open="handleOpen()"
       @save="handleSave"
       @save-as="handleSaveAs"
+      @save-copy="handleSaveCopy"
       @export="handleExport"
       @template="openTemplate"
       @recent="handleOpen"

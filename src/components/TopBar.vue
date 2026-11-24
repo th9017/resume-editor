@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import {
   Code2,
+  Copy,
   Download,
   FilePlus2,
   FolderOpen,
@@ -33,6 +34,7 @@ const emit = defineEmits<{
   (event: 'open'): void
   (event: 'save'): void
   (event: 'saveAs'): void
+  (event: 'saveCopy'): void
   (event: 'export'): void
   (event: 'template'): void
   (event: 'recent', path: string): void
@@ -50,9 +52,10 @@ function closeMore(): void {
   if (more.value) more.value.open = false
 }
 
-function emitAndClose(event: 'new' | 'saveAs' | 'source'): void {
+function emitAndClose(event: 'new' | 'saveAs' | 'saveCopy' | 'source'): void {
   if (event === 'new') emit('new')
   else if (event === 'saveAs') emit('saveAs')
+  else if (event === 'saveCopy') emit('saveCopy')
   else emit('source')
   closeMore()
 }
@@ -121,6 +124,10 @@ function openRecent(path: string): void {
           <button @click="emitAndClose('saveAs')">
             <SaveAll :size="15" />
             <span>另存为</span>
+          </button>
+          <button @click="emitAndClose('saveCopy')">
+            <Copy :size="15" />
+            <span>另存为副本</span>
           </button>
           <button @click="emitAndClose('source')">
             <Code2 :size="15" />

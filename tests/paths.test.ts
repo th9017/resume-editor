@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   baseName,
+  copyCandidate,
   isAbsolutePath,
   joinPath,
   parentDir,
@@ -16,6 +17,13 @@ describe('paths', () => {
     expect(joinPath('C:/a', 'b.md')).toBe('C:/a/b.md')
     expect(joinPath('C:/a/', 'b.md')).toBe('C:/a/b.md')
     expect(joinPath('', 'b.md')).toBe('b.md')
+  })
+
+  it('copyCandidate 生成同目录副本名', () => {
+    expect(copyCandidate('C:\\a\\简历.md', 1)).toBe('C:\\a\\简历-副本.md')
+    expect(copyCandidate('C:\\a\\简历.md', 3)).toBe('C:\\a\\简历-副本-3.md')
+    expect(copyCandidate('/home/me/resume.markdown', 1)).toBe('/home/me/resume-副本.markdown')
+    expect(copyCandidate('resume', 1)).toBe('resume-副本.md')
   })
 
   it('baseName 与 parentDir', () => {
