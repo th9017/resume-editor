@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { X } from 'lucide-vue-next'
 import { TEMPLATE_LIST } from '../core/render/templates'
 import type { Spacing, TemplateId } from '../core/types'
-import { draft, touchDraft } from '../stores/editor'
+import { draft, structuralEdit, touchDraft } from '../stores/editor'
 
 defineProps<{ open: boolean }>()
 const emit = defineEmits<{ (event: 'close'): void }>()
@@ -19,32 +19,32 @@ const spacings: { value: Spacing; label: string }[] = [
 function setTemplate(template: TemplateId): void {
   if (!draft.value) return
   draft.value.style.template = template
-  touchDraft()
+  structuralEdit(`style:template:${template}`)
 }
 
 function setAccent(accent: string): void {
   if (!draft.value) return
   draft.value.style.accent = accent
-  touchDraft()
+  structuralEdit(`style:accent:${accent}`)
 }
 
 function onFontSize(event: Event): void {
   const value = Number((event.target as HTMLInputElement).value)
   if (!Number.isFinite(value) || !draft.value) return
   draft.value.style.fontSize = value
-  touchDraft()
+  touchDraft('style:font-size')
 }
 
 function setSpacing(spacing: Spacing): void {
   if (!draft.value) return
   draft.value.style.spacing = spacing
-  touchDraft()
+  structuralEdit(`style:spacing:${spacing}`)
 }
 
 function onAutoFit(event: Event): void {
   if (!draft.value) return
   draft.value.style.autoFit = (event.target as HTMLInputElement).checked
-  touchDraft()
+  structuralEdit('style:auto-fit')
 }
 </script>
 

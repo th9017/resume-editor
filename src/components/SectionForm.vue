@@ -13,12 +13,12 @@ const skillsNoteOpen = ref(Boolean(props.section.body && props.section.type === 
 
 function setTitle(value: string): void {
   props.section.title = value
-  touchDraft()
+  touchDraft(`section-title:${props.section.id}`)
 }
 
 function setBody(value: string): void {
   props.section.body = value
-  touchDraft()
+  touchDraft(`section-body:${props.section.id}`)
 }
 </script>
 

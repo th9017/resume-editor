@@ -11,7 +11,7 @@ import {
   writeBinaryFile,
 } from '../tauri'
 import { docState, showToast } from '../stores/document'
-import { draft, touchDraft } from '../stores/editor'
+import { draft, structuralEdit, touchDraft } from '../stores/editor'
 
 const identity = computed(() => draft.value?.identity ?? null)
 const avatarSrc = ref('')
@@ -57,19 +57,19 @@ function setContact(key: string, value: string): void {
   const existing = draft.value.identity.contacts.find((contact) => contact.key === key)
   if (existing) existing.value = value
   else draft.value.identity.contacts.push({ key, label: CONTACT_LABELS[key] ?? key, value })
-  touchDraft()
+  touchDraft(`contact:${key}`)
 }
 
 function setName(value: string): void {
   if (!draft.value) return
   draft.value.identity.name = value
-  touchDraft()
+  touchDraft('identity:name')
 }
 
 function setTitle(value: string): void {
   if (!draft.value) return
   draft.value.identity.title = value
-  touchDraft()
+  touchDraft('identity:title')
 }
 
 async function pickAvatar(): Promise<void> {
@@ -100,7 +100,7 @@ async function pickAvatar(): Promise<void> {
     const name = assetFileName('avatar', ext)
     await writeBinaryFile(joinPath(assetsDir, name), bytes)
     draft.value.identity.avatar = `assets/${name}`
-    touchDraft()
+    structuralEdit('set-avatar')
     showToast('头像已更新')
   } catch (error) {
     showToast(`头像设置失败：${messageOf(error)}`, 'error')
@@ -110,7 +110,7 @@ async function pickAvatar(): Promise<void> {
 function removeAvatar(): void {
   if (!draft.value) return
   draft.value.identity.avatar = ''
-  touchDraft()
+  structuralEdit('remove-avatar')
 }
 
 function messageOf(error: unknown): string {

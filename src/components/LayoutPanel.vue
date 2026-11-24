@@ -7,7 +7,7 @@ import {
   editorState,
   moveSection,
   removeSection,
-  touchDraft,
+  structuralEdit,
 } from '../stores/editor'
 import { sectionIcon } from './sectionIcons'
 
@@ -25,7 +25,7 @@ function select(section: DraftSection): void {
 
 function setPlacement(section: DraftSection, event: Event): void {
   section.placement = (event.target as HTMLSelectElement).value as DraftSection['placement']
-  touchDraft()
+  structuralEdit(`placement:${section.id}`)
 }
 
 function remove(section: DraftSection): void {

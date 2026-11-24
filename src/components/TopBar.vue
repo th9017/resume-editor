@@ -7,8 +7,10 @@ import {
   FolderOpen,
   LayoutTemplate,
   MoreHorizontal,
+  Redo2,
   Save,
   SaveAll,
+  Undo2,
 } from 'lucide-vue-next'
 import type { RecentFile } from '../core/recent'
 
@@ -19,6 +21,8 @@ defineProps<{
   printing: boolean
   recent: RecentFile[]
   autoSave: boolean
+  canUndo: boolean
+  canRedo: boolean
 }>()
 
 const emit = defineEmits<{
@@ -31,6 +35,8 @@ const emit = defineEmits<{
   (event: 'recent', path: string): void
   (event: 'source'): void
   (event: 'toggleAutoSave'): void
+  (event: 'undo'): void
+  (event: 'redo'): void
 }>()
 
 const more = ref<HTMLDetailsElement>()
@@ -70,6 +76,17 @@ function openRecent(path: string): void {
     </div>
 
     <div class="top-actions">
+      <button class="tb-btn icon-only" title="撤销 (Ctrl+Z)" :disabled="!canUndo" @click="emit('undo')">
+        <Undo2 :size="16" />
+      </button>
+      <button
+        class="tb-btn icon-only"
+        title="重做 (Ctrl+Shift+Z)"
+        :disabled="!canRedo"
+        @click="emit('redo')"
+      >
+        <Redo2 :size="16" />
+      </button>
       <button class="tb-btn" @click="emit('open')">
         <FolderOpen :size="16" />
         <span>打开</span>

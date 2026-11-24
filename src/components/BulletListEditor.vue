@@ -1,24 +1,26 @@
 <script setup lang="ts">
-import { nextTick, ref } from 'vue'
+import { getCurrentInstance, nextTick, ref } from 'vue'
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-vue-next'
 import {
   addDraftBullet,
   moveDraftBullet,
   removeDraftBullet,
 } from '../core/draftActions'
-import { touchDraft } from '../stores/editor'
+import { structuralEdit, touchDraft } from '../stores/editor'
 
 const props = defineProps<{ target: { bullets: string[] } }>()
 const host = ref<HTMLDivElement>()
+// 同一页面上有多个要点编辑器，用实例 uid 区分各自的合并键
+const scope = `bullets-${getCurrentInstance()?.uid ?? 0}`
 
 function setBullet(index: number, value: string): void {
   props.target.bullets[index] = value
-  touchDraft()
+  touchDraft(`${scope}:${index}`)
 }
 
 async function addBullet(): Promise<void> {
   addDraftBullet(props.target, props.target.bullets.length - 1)
-  touchDraft()
+  structuralEdit(`${scope}:add`)
   await nextTick()
   const inputs = host.value?.querySelectorAll('input')
   inputs?.[inputs.length - 1]?.focus()
@@ -26,12 +28,12 @@ async function addBullet(): Promise<void> {
 
 function removeBullet(index: number): void {
   removeDraftBullet(props.target, index)
-  touchDraft()
+  structuralEdit(`${scope}:remove`)
 }
 
 function moveBullet(index: number, delta: -1 | 1): void {
   moveDraftBullet(props.target, index, delta)
-  touchDraft()
+  structuralEdit(`${scope}:move`)
 }
 </script>
 

@@ -28,6 +28,8 @@ import {
   showToast,
 } from './stores/document'
 import {
+  canRedo,
+  canUndo,
   currentDoc,
   draft,
   draftRevision,
@@ -35,7 +37,9 @@ import {
   enterSourceMode,
   flushDraft,
   loadFromContent,
+  redoFormEdit,
   requestSourceSwitch,
+  undoFormEdit,
 } from './stores/editor'
 import TopBar from './components/TopBar.vue'
 import SectionRail from './components/SectionRail.vue'
@@ -211,6 +215,20 @@ function handleAddSectionPlaceholder(): void {
   editorState.addMenuOpen = true
 }
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  if (target.isContentEditable) return true
+  return ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+}
+
+function handleUndo(): void {
+  undoFormEdit()
+}
+
+function handleRedo(): void {
+  redoFormEdit()
+}
+
 function onKeydown(event: KeyboardEvent): void {
   if (!(event.ctrlKey || event.metaKey)) return
   const key = event.key.toLowerCase()
@@ -229,6 +247,12 @@ function onKeydown(event: KeyboardEvent): void {
   } else if (key === 'n') {
     event.preventDefault()
     void handleNew()
+  } else if (key === 'z' || key === 'y') {
+    // 光标在输入框内时保留浏览器逐字符撤销，其它场景走全局撤销栈
+    if (isEditableTarget(event.target)) return
+    event.preventDefault()
+    if (key === 'y' || event.shiftKey) handleRedo()
+    else handleUndo()
   }
 }
 
@@ -311,6 +335,8 @@ onBeforeUnmount(() => {
       :printing="printing"
       :recent="appState.recent"
       :auto-save="appState.autoSave"
+      :can-undo="canUndo"
+      :can-redo="canRedo"
       @new="handleNew"
       @open="handleOpen()"
       @save="handleSave"
@@ -320,6 +346,8 @@ onBeforeUnmount(() => {
       @recent="handleOpen"
       @source="handleSourcePlaceholder"
       @toggle-auto-save="toggleAutoSave"
+      @undo="handleUndo"
+      @redo="handleRedo"
     />
 
     <div class="workspace">

@@ -61,12 +61,12 @@ const placeholders: Record<string, string> = {
 
 function setField(key: string, value: string): void {
   props.item.fields[key] = value
-  touchDraft()
+  touchDraft(`field:${props.item.id}:${key}`)
 }
 
 function setNote(value: string): void {
   props.item.note = value
-  touchDraft()
+  touchDraft(`note:${props.item.id}`)
 }
 
 function move(delta: -1 | 1): void {
